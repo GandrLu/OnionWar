@@ -31,7 +31,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     Quaternion oldRotation = Quaternion.identity;
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-    {
+	{
         if (stream.IsWriting)
         {
             stream.SendNext(isAiming);
@@ -67,15 +67,15 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
 
     void Awake()
     {
-        // Create a layer mask for the floor layer.
+		// Create a layer mask for the floor layer.
         aimingPlaneMask = LayerMask.GetMask("AimingPlane");
 
-        // Set up references.
+		// Set up references.
         anim = GetComponent<Animator>();
         playerRigidbody = GetComponent<Rigidbody>();
 
         m_ScreenWidth = Screen.width;
-    }
+	}
 
     private void Start()
     {
@@ -86,11 +86,11 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
 
     void Update(){
         if (photonView.IsMine == false && PhotonNetwork.IsConnected == true)
-        {
+	{
             return;
         }
 
-        // Store the input axes.
+		// Store the input axes.
         h = Input.GetAxisRaw("Horizontal");
         v = Input.GetAxisRaw("Vertical");
 
@@ -105,15 +105,15 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         {
             return;
         }
-        // Move the player around the scene.
+		// Move the player around the scene.
         Move(h, v, isAiming);
 
-        // Turn the player to face the mouse cursor.
+		// Turn the player to face the mouse cursor.
         Turning(true);
-        
-        // Animate the player.
+
+		// Animate the player.
         Animating(h, v, isAiming);
-    }
+	}
 
     void Move(float h, float v, bool aiming)
     {
@@ -121,22 +121,22 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         float verticalMovement = v * m_Speed * Time.deltaTime;
 
         if (aiming)
-        {
-            // Set the movement vector based on the axis input.
+	{
+        // Set the movement vector based on the axis input.
             //movement.Set(h, 0f, v);
 
-            // Normalize the movement vector and make it proportional to the speed per second.
+        // Normalize the movement vector and make it proportional to the speed per second.
             //movement = movement.normalized * m_Speed * Time.deltaTime;
-            //playerRigidbody.AddRelativeForce(speed * h, 0, speed * v)
+        //playerRigidbody.AddRelativeForce(speed * h, 0, speed * v)
 
             // Slow movement while aiming
             verticalMovement *= 0.5f;
             horizontalMovement *= 0.5f;
 
-            // Move the player to it's current position plus the movement.
-            //playerRigidbody.MovePosition (new Vector3(transform.localPosition.x * horizontalMovement, 0, transform.localPosition.z * verticalMovement));
-            transform.localPosition += transform.forward * verticalMovement;
-            transform.localPosition += transform.right * horizontalMovement;
+        // Move the player to it's current position plus the movement.
+        //playerRigidbody.MovePosition (new Vector3(transform.localPosition.x * horizontalMovement, 0, transform.localPosition.z * verticalMovement));
+        transform.localPosition += transform.forward * verticalMovement;
+        transform.localPosition += transform.right * horizontalMovement;
         }
         else
         {
@@ -153,28 +153,29 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     void Turning(bool aiming)
     {
         if (aiming)
-        {
-            // Create a ray from the mouse cursor on screen in the direction of the camera.
+	{
+		// Create a ray from the mouse cursor on screen in the direction of the camera.
             Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
             Vector3 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Vector3 lookDirection = worldPoint - playerRigidbody.position;
             float angle = Mathf.Atan2(lookDirection.y, lookDirection.x) * Mathf.Rad2Deg - 90f;
-            
-            // Create a RaycastHit variable to store information about what was hit by the ray.
-            RaycastHit floorHit;
 
-            // Perform the raycast and if it hits something on the floor layer...
+		// Create a RaycastHit variable to store information about what was hit by the ray.
+		RaycastHit floorHit;
+
+		// Perform the raycast and if it hits something on the floor layer...
             if (Physics.Raycast(camRay, out floorHit, camRayLength, aimingPlaneMask))
-            {
-                // Create a vector from the player to the point on the floor the raycast from the mouse hit.
-                Vector3 playerToMouse = floorHit.point - transform.position;
-                // Ensure the vector is entirely along the floor plane.
-                playerToMouse.y = 0f;
+		{
+			// Create a vector from the player to the point on the floor the raycast from the mouse hit.
+			Vector3 playerToMouse = floorHit.point - transform.position;
 
-                // Create a quaternion (rotation) based on looking down the vector from the player to the mouse.
+			// Ensure the vector is entirely along the floor plane.
+			playerToMouse.y = 0f;
+
+			// Create a quaternion (rotation) based on looking down the vector from the player to the mouse.
                 Quaternion newRotation = Quaternion.LookRotation(playerToMouse);
 
-                // Set the player's rotation to this new rotation.
+			// Set the player's rotation to this new rotation.
                 playerRigidbody.MoveRotation(newRotation);
             }
         }
@@ -205,19 +206,19 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
             Quaternion rotate = Quaternion.AngleAxis(angle, Vector3.up);
             playerRigidbody.rotation = rotate;
             Debug.Log(worldPoint);
-        }
-    }
+		}
+	}
 
     void Animating(float h, float v, bool aiming)
-    {
-        // Create a boolean that is true if either of the input axes is non-zero.
+	{
+		// Create a boolean that is true if either of the input axes is non-zero.
         // Only considering vertical movement because in walking mode there is 
         // no sideway movement.
-        bool walking = v != 0f;
+		bool walking = v != 0f;
 
         SetAimingAnimation(aiming);
 
-        // Tell the animator whether or not the player is walking.
+		// Tell the animator whether or not the player is walking.
         anim.SetBool("IsWalking", walking);
         anim.SetBool("IsAiming", aiming);
         anim.SetFloat("vertical", v);

@@ -84,6 +84,7 @@ PlayerSettings:
   useMacAppStoreValidation: 0
   macAppStoreCategory: public.app-category.games
   gpuSkinning: 1
+  graphicsJobs: 0
   xboxPIXTextureCapture: 0
   xboxEnableAvatar: 0
   xboxEnableKinect: 0
@@ -126,6 +127,7 @@ PlayerSettings:
   m_HolographicPauseOnTrackingLoss: 1
   xboxOneDisableKinectGpuReservation: 0
   xboxOneEnable7thCore: 0
+  isWsaHolographicRemotingEnabled: 0
   vrSettings:
     cardboard:
       depthFormat: 0
@@ -342,6 +344,7 @@ PlayerSettings:
     m_Devices:
     - Oculus
     - OpenVR
+  m_BuildTargetEnableVuforiaSettings: []
   openGLRequireES31: 0
   openGLRequireES31AEP: 0
   openGLRequireES32: 0
@@ -633,6 +636,7 @@ PlayerSettings:
   metroFTAName: 
   metroFTAFileTypes: []
   metroProtocolName: 
+  metroCompilationOverrides: 1
   XboxOneProductId: 
   XboxOneUpdateKey: 
   XboxOneSandboxId: 
@@ -657,6 +661,7 @@ PlayerSettings:
   XboxOneAllowedProductIds: []
   XboxOnePersistentLocalStorageSize: 0
   XboxOneXTitleMemory: 8
+  xboxOneScriptCompiler: 0
   XboxOneOverrideIdentityName: 
   vrEditorSettings:
     daydream:
@@ -676,6 +681,13 @@ PlayerSettings:
   luminVersion:
     m_VersionCode: 1
     m_VersionName: 
+  facebookSdkVersion: 7.9.4
+  facebookAppId: 
+  facebookCookies: 1
+  facebookLogging: 1
+  facebookStatus: 1
+  facebookXfbml: 0
+  facebookFrictionlessRequests: 1
   apiCompatibilityLevel: 6
   cloudProjectId: 4c1e29e2-0ccb-4ae0-9aa5-61c4df5c620a
   framebufferDepthMemorylessMode: 0

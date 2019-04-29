@@ -32,7 +32,7 @@ public class CameraFollow : MonoBehaviour {
         }
     }
 
-    void Start()
+	void Start()
 	{
         if (!is_FollowActive)
             return;
@@ -72,5 +72,5 @@ public class CameraFollow : MonoBehaviour {
         transform.rotation.Set(0, Target.rotation.y, 0, 0);
         m_ScreenWidth = Screen.width;
         offset = transform.position - Target.position;
-    }
+	}
 }
