@@ -5283,7 +5283,7 @@ PrefabInstance:
 --- !u!1001 &1587596391
 PrefabInstance:
   m_ObjectHideFlags: 0
-  serializedVersion: 2
+    serializedVersion: 2
   m_Modification:
     m_TransformParent: {fileID: 1273770100}
     m_Modifications:
@@ -5786,7 +5786,7 @@ Transform:
 --- !u!1001 &1626751482
 PrefabInstance:
   m_ObjectHideFlags: 0
-  serializedVersion: 2
+    serializedVersion: 2
   m_Modification:
     m_TransformParent: {fileID: 1273770100}
     m_Modifications:
