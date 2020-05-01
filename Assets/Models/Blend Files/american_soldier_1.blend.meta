@@ -1,0 +1,219 @@
+fileFormatVersion: 2
+guid: 7b0382176e6354f448319e62125ae540
+ModelImporter:
+  serializedVersion: 23
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: Ankle_L
+    100004: Ankle_R
+    100006: Armature
+    100008: Ball_L
+    100010: Ball_R
+    100012: Character_American_Soldier_01
+    100014: Clavicle_L
+    100016: Clavicle_R
+    100018: Elbow_L
+    100020: Elbow_R
+    100022: Eyebrows
+    100024: Eyes
+    100026: Finger_01_L
+    100028: Finger_01_R
+    100030: Finger_02_L
+    100032: Finger_02_R
+    100034: Finger_03_L
+    100036: Finger_03_R
+    100038: Hand_L
+    100040: Hand_R
+    100042: HandHold_L
+    100044: HandHold_R
+    100046: Head
+    100048: Helmet
+    100050: Hips
+    100052: IndexFinger_01_L
+    100054: IndexFinger_01_R
+    100056: IndexFinger_02_L
+    100058: IndexFinger_02_R
+    100060: IndexFinger_03_L
+    100062: IndexFinger_03_R
+    100064: LowerLeg_L
+    100066: LowerLeg_R
+    100068: Neck
+    100070: Root
+    100072: Shoulder_L
+    100074: Shoulder_R
+    100076: SM_Char_Attach_American_Helmet_01
+    100078: SM_Wep_American_Rifle_01
+    100080: SM_Wep_American_Rifle_01_Slide
+    100082: SM_Wep_American_Rifle_01_Trigger
+    100084: Spine_01
+    100086: Spine_02
+    100088: Spine_03
+    100090: Thumb_01_L
+    100092: Thumb_01_R
+    100094: Thumb_02_L
+    100096: Thumb_02_R
+    100098: UpperLeg_L
+    100100: UpperLeg_R
+    400000: //RootNode
+    400002: Ankle_L
+    400004: Ankle_R
+    400006: Armature
+    400008: Ball_L
+    400010: Ball_R
+    400012: Character_American_Soldier_01
+    400014: Clavicle_L
+    400016: Clavicle_R
+    400018: Elbow_L
+    400020: Elbow_R
+    400022: Eyebrows
+    400024: Eyes
+    400026: Finger_01_L
+    400028: Finger_01_R
+    400030: Finger_02_L
+    400032: Finger_02_R
+    400034: Finger_03_L
+    400036: Finger_03_R
+    400038: Hand_L
+    400040: Hand_R
+    400042: HandHold_L
+    400044: HandHold_R
+    400046: Head
+    400048: Helmet
+    400050: Hips
+    400052: IndexFinger_01_L
+    400054: IndexFinger_01_R
+    400056: IndexFinger_02_L
+    400058: IndexFinger_02_R
+    400060: IndexFinger_03_L
+    400062: IndexFinger_03_R
+    400064: LowerLeg_L
+    400066: LowerLeg_R
+    400068: Neck
+    400070: Root
+    400072: Shoulder_L
+    400074: Shoulder_R
+    400076: SM_Char_Attach_American_Helmet_01
+    400078: SM_Wep_American_Rifle_01
+    400080: SM_Wep_American_Rifle_01_Slide
+    400082: SM_Wep_American_Rifle_01_Trigger
+    400084: Spine_01
+    400086: Spine_02
+    400088: Spine_03
+    400090: Thumb_01_L
+    400092: Thumb_01_R
+    400094: Thumb_02_L
+    400096: Thumb_02_R
+    400098: UpperLeg_L
+    400100: UpperLeg_R
+    2100000: Character_Mat1
+    2300000: SM_Wep_American_Rifle_01_Slide
+    2300002: SM_Wep_American_Rifle_01_Trigger
+    3300000: SM_Wep_American_Rifle_01_Slide
+    3300002: SM_Wep_American_Rifle_01_Trigger
+    4300000: Character_American_Soldier_01
+    4300002: SM_Wep_American_Rifle_01
+    4300004: SM_Wep_American_Rifle_01_Slide
+    4300006: SM_Wep_American_Rifle_01_Trigger
+    4300008: SM_Char_Attach_American_Helmet_01
+    7400000: Default Take
+    7400002: Aiming_idle
+    7400004: Aiming_walk
+    7400006: Grip_aiming_right
+    7400008: Grip_left
+    7400010: Grip_right
+    7400012: Idle
+    7400014: Rifle_idle
+    7400016: Run
+    7400018: Strafe_left
+    7400020: Strafe_right
+    7400022: Walk
+    9500000: //RootNode
+    13700000: Character_American_Soldier_01
+    13700002: SM_Char_Attach_American_Helmet_01
+    13700004: SM_Wep_American_Rifle_01
+  externalObjects: {}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    preserveHierarchy: 0
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    previousCalculatedGlobalScale: 1
+    hasPreviousCalculatedGlobalScale: 1
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
