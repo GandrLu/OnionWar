@@ -44,7 +44,7 @@ public class PlayerMovement : MonoBehaviour
         Move(h, v, isAiming);
 
         // Turn the player to face the mouse cursor.
-        Turning(h, v, true);
+        Turning(true);
 
         // Animate the player.
         Animating(h, v, isAiming);
@@ -86,7 +86,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    void Turning(float h, float v, bool aiming)
+    void Turning(bool aiming)
     {
         if (aiming)
         {
