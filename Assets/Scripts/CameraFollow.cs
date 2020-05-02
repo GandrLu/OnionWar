@@ -4,10 +4,13 @@ using UnityEngine;
 
 public class CameraFollow : MonoBehaviour {
 
-	public Transform target;
-	public float smoothing = 5f;
-    int m_ScreenWidth = 0;
-    float m_CameraOffsetZ = 7.5f;
+    [SerializeField]
+    private float m_CameraOffsetZ = 7.5f;
+    [SerializeField]
+	private float smoothing = 5f;
+    [SerializeField]
+	private Transform target;
+    private int m_ScreenWidth = 0;
 
 	Vector3 offset;
 
@@ -39,7 +42,8 @@ public class CameraFollow : MonoBehaviour {
         //    }
         //}
         //offset = transform.position - target.position;
-        transform.RotateAround(target.position, Vector3.up, target.rotation.eulerAngles.y);
+        
+        //transform.RotateAround(target.position, Vector3.up, target.rotation.eulerAngles.y);
         transform.LookAt(target);
 	}
 }

@@ -44,7 +44,7 @@ public class PlayerMovement : MonoBehaviour
         Move(h, v, isAiming);
 
         // Turn the player to face the mouse cursor.
-        Turning(h, v, isAiming);
+        Turning(h, v, true);
 
         // Animate the player.
         Animating(h, v, isAiming);
@@ -81,7 +81,8 @@ public class PlayerMovement : MonoBehaviour
                 verticalMovement *= 2f;
                 horizontalMovement *= 2f;
             }
-            transform.position = new Vector3(transform.position.x + horizontalMovement, 0, transform.position.z + verticalMovement);
+            transform.localPosition += transform.forward * verticalMovement;
+            transform.localPosition += transform.right * horizontalMovement;
         }
     }
 
