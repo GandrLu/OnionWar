@@ -15,6 +15,7 @@ public class PlayerShooting : MonoBehaviour
     private int shootableMask;
     private float camRayLength = 100f;
     private Vector3 position;
+    Quaternion shootRotation;
 
     private void Awake()
     {
@@ -32,20 +33,21 @@ public class PlayerShooting : MonoBehaviour
         position = transform.position;
 
         isAiming = Input.GetButton("Fire2");
-        
-        if (Input.GetButton("Fire1") && timer >= timeBetweenBullets)
-            Shoot();
+        aimingLine.enabled = isAiming;
 
         if (isAiming)
             Aim();
+        else
+            shootRotation = transform.rotation;
 
-        aimingLine.enabled = isAiming;
+        if (Input.GetButton("Fire1") && timer >= timeBetweenBullets)
+            Shoot();
     }
 
     private void Shoot()
     {
         timer = 0f;
-        Instantiate(projectile, position, transform.rotation);
+        Instantiate(projectile, position, shootRotation);
     }
 
     private void Aim()
@@ -60,6 +62,10 @@ public class PlayerShooting : MonoBehaviour
         // Perform the raycast and if it hits something on the floor layer...
         if (Physics.Raycast(camRay, out shootableHit, camRayLength, shootableMask))
         {
+            Vector3 aimingVector = shootableHit.point - position;
+            shootRotation = Quaternion.LookRotation(aimingVector);
+            //Debug.Log("Pos " + playerToMouse);
+            //Debug.Log("ScreenRay " + shootableHit.point);
             aimingLine.SetPosition(1, shootableHit.point);
         }
         else
