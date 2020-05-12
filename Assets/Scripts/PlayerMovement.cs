@@ -15,6 +15,11 @@ public class PlayerMovement : MonoBehaviour
     private float h;
     private float v;
     private bool isAiming;
+    [SerializeField]
+    private GameObject weaponPrefab;
+    [SerializeField]
+    private Transform handHold;
+    private PersonalWeapon weaponInHands;
 
     void Awake()
     {
@@ -26,6 +31,11 @@ public class PlayerMovement : MonoBehaviour
         playerRigidbody = GetComponent<Rigidbody>();
 
         m_ScreenWidth = Screen.width;
+    }
+
+    private void Start()
+    {
+        ChangeWeapon(weaponPrefab);
     }
 
     void Update(){
@@ -149,10 +159,29 @@ public class PlayerMovement : MonoBehaviour
         // Create a boolean that is true if either of the input axes is non-zero.
         bool walking = v != 0f || h != 0f;
 
+        SetAimingAnimation(aiming);
+
         // Tell the animator whether or not the player is walking.
         anim.SetBool("IsWalking", walking);
         anim.SetBool("IsAiming", aiming);
         anim.SetFloat("vertical", v);
         anim.SetFloat("horizontal", h);
+    }
+
+    public void ChangeWeapon(GameObject weapon)
+    {
+        weaponInHands = Instantiate(weapon, handHold, false).GetComponent<PersonalWeapon>();
+        weaponInHands.SetHoldingTransform();
+    }
+
+    private void SetAimingAnimation(bool aiming)
+    {
+        if (aiming)
+            weaponInHands.SetAimingTransform();
+        else
+            weaponInHands.SetHoldingTransform();
+     
+        string parameterName = "hand" + weaponInHands.GetWeaponType().ToString();
+        anim.SetBool(parameterName, aiming);
     }
 }
