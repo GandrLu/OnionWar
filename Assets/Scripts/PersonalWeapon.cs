@@ -12,11 +12,11 @@ public class PersonalWeapon : MonoBehaviour
     [SerializeField]
     private Vector3 aimingPosition;
     [SerializeField]
-    private Quaternion aimingRotation;
+    private Vector3 aimingRotation;
     [SerializeField]
     private Vector3 holdingPosition;
     [SerializeField]
-    private Quaternion holdingRotation;
+    private Vector3 holdingRotation;
     [SerializeField]
     private PersonalWeaponType weaponType;
 
@@ -35,13 +35,13 @@ public class PersonalWeapon : MonoBehaviour
     public void SetHoldingTransform()
     {
         transform.localPosition = holdingPosition;
-        transform.localRotation = holdingRotation;
+        transform.localRotation = Quaternion.Euler(holdingRotation);
     }
     
     public void SetAimingTransform()
     {
         transform.localPosition = aimingPosition;
-        transform.localRotation = aimingRotation;
+        transform.localRotation = Quaternion.Euler(aimingRotation);
     }
 
     public PersonalWeaponType GetWeaponType()

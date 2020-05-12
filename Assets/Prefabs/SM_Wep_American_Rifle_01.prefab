@@ -255,9 +255,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   aimingPosition: {x: 9.9, y: 6.4, z: 5.8}
-  aimingRotation: {x: 900.176, y: -179.35, z: -179.616, w: 1}
-  holdingPosition: {x: 13.2, y: -30.6, z: -1.1}
-  holdingRotation: {x: 0.1470072, y: 0.3639487, z: -0.0168176, w: -0.9195909}
+  aimingRotation: {x: 900.176, y: -179.35, z: -179.616}
+  holdingPosition: {x: 12.6, y: -30.6, z: -1.7}
+  holdingRotation: {x: 703.893, y: -44.51, z: -0.447}
   weaponType: 1
 --- !u!1 &8946140323406741020
 GameObject:

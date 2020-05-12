@@ -94,10 +94,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2245242b71d08849a3026a0f845880d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  aimingPosition: {x: -15.3, y: -60.4, z: -19}
-  aimingRotation: {x: 135.694, y: 12.56499, z: 98.849, w: 1}
+  aimingPosition: {x: 27.8, y: 8.2, z: 25.9}
+  aimingRotation: {x: -0.245, y: 20.616, z: 358.13}
   holdingPosition: {x: 12.5, y: -30.1, z: -2.1}
-  holdingRotation: {x: 21.81, y: -51.312, z: 1.044, w: 1}
+  holdingRotation: {x: 160.757, y: 155.274, z: 190.518}
   weaponType: 2
 --- !u!1 &9170946578018088000
 GameObject:
