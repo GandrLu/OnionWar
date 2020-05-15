@@ -1536,6 +1536,9 @@ MonoBehaviour:
   aimingPlane: {fileID: 0}
   aimingAtShootableDirection: {x: 0, y: 0, z: 0}
   aimingAtShootable: 0
+  IkTargetRight: {fileID: 0}
+  IkTargetLeft: {fileID: 0}
+  Spine: {fileID: 0}
 --- !u!136 &217795792
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -4384,6 +4387,10 @@ PrefabInstance:
       propertyPath: aimingPlane
       value: 
       objectReference: {fileID: 1434138682}
+    - target: {fileID: 625492737, guid: 7015228efee989c458c3d923118fa03c, type: 3}
+      propertyPath: Spine
+      value: 
+      objectReference: {fileID: 1563705315}
     - target: {fileID: 8844740409901714394, guid: 7015228efee989c458c3d923118fa03c,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -5244,6 +5251,12 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!4 &1563705315 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8840425496699327109, guid: 7015228efee989c458c3d923118fa03c,
+    type: 3}
+  m_PrefabInstance: {fileID: 1086001562}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1587596391
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6403,7 +6416,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh22294
+  m_Name: pb_Mesh22304
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
@@ -6890,7 +6903,7 @@ Mesh:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: pb_Mesh22308
+  m_Name: pb_Mesh22318
   serializedVersion: 10
   m_SubMeshes:
   - serializedVersion: 2
