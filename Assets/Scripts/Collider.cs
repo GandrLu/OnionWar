@@ -18,10 +18,10 @@ public class Collider : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
-        Debug.Log("Collision " + other.transform.name);
+        //Debug.Log("Collision " + other.transform.name);
     }
     private void OnTriggerEnter(UnityEngine.Collider other)
     {
-        Debug.Log("Triggered " + other.transform.name);
+        //Debug.Log("Triggered " + other.transform.name);
     }
 }

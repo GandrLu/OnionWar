@@ -7,7 +7,7 @@ public class PlayerMovement : MonoBehaviour
     //Vector3 movement;                   // The vector to store the direction of the player's movement.
     private Animator anim;                      // Reference to the animator component.
     private Rigidbody playerRigidbody;          // Reference to the player's rigidbody.
-    private int floorMask;                      // A layer mask so that a ray can be cast just at gameobjects on the floor layer.
+    private int aimingPlaneMask;                      // A layer mask so that a ray can be cast just at gameobjects on the floor layer.
     private float camRayLength = 100f;          // The length of the ray from the camera into the scene.
     //private bool isAiming = false;
     private bool m_IsSprinting = false;
@@ -20,11 +20,18 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     private Transform handHold;
     private PersonalWeapon weaponInHands;
+    public Transform aimingPlane;
+    public Vector3 aimingAtShootableDirection;
+    public bool aimingAtShootable;
+    [SerializeField] Transform IkTargetRight;
+    [SerializeField] Transform IkTargetLeft;
+    [SerializeField] Transform Spine;
+    
 
     void Awake()
     {
         // Create a layer mask for the floor layer.
-        floorMask = LayerMask.GetMask("Floor");
+        aimingPlaneMask = LayerMask.GetMask("AimingPlane");
 
         // Set up references.
         anim = GetComponent<Animator>();
@@ -110,11 +117,10 @@ public class PlayerMovement : MonoBehaviour
             RaycastHit floorHit;
 
             // Perform the raycast and if it hits something on the floor layer...
-            if (Physics.Raycast(camRay, out floorHit, camRayLength, floorMask))
+            if (Physics.Raycast(camRay, out floorHit, camRayLength, aimingPlaneMask))
             {
                 // Create a vector from the player to the point on the floor the raycast from the mouse hit.
                 Vector3 playerToMouse = floorHit.point - transform.position;
-
                 // Ensure the vector is entirely along the floor plane.
                 playerToMouse.y = 0f;
 
@@ -125,6 +131,7 @@ public class PlayerMovement : MonoBehaviour
                 playerRigidbody.MoveRotation(newRotation);
             }
         }
+        // Mousewheel
         else if (Input.GetButton("Fire3"))
         {
             Debug.Log(Input.mousePosition);
@@ -170,8 +177,11 @@ public class PlayerMovement : MonoBehaviour
 
     public void ChangeWeapon(GameObject weapon)
     {
-        weaponInHands = Instantiate(weapon, handHold, false).GetComponent<PersonalWeapon>();
+        GameObject weaponObj = Instantiate(weapon, handHold, false);
+        weaponObj.GetComponentInChildren<PlayerShooting>().player = this;
+        weaponInHands = weaponObj.GetComponent<PersonalWeapon>();
         weaponInHands.SetHoldingTransform();
+        aimingPlane.localPosition = new Vector3(0, weaponInHands.transform.position.y, 0);
     }
 
     private void SetAimingAnimation(bool aiming)
@@ -183,5 +193,21 @@ public class PlayerMovement : MonoBehaviour
      
         string parameterName = "hand" + weaponInHands.GetWeaponType().ToString();
         anim.SetBool(parameterName, aiming);
+    }
+
+    private void OnAnimatorIK()
+    {
+        Debug.Log("Animator IK");
+        if (IkTargetLeft != null && IkTargetRight != null)
+        {
+            anim.SetIKPositionWeight(AvatarIKGoal.RightHand, 1);
+            anim.SetIKRotationWeight(AvatarIKGoal.RightHand, 1);
+            anim.SetIKPosition(AvatarIKGoal.RightHand, IkTargetRight.position);
+            anim.SetIKRotation(AvatarIKGoal.RightHand, IkTargetRight.rotation);
+            anim.SetIKPositionWeight(AvatarIKGoal.LeftHand, 1);
+            anim.SetIKRotationWeight(AvatarIKGoal.LeftHand, 1);
+            anim.SetIKPosition(AvatarIKGoal.LeftHand, IkTargetLeft.position);
+            anim.SetIKRotation(AvatarIKGoal.LeftHand, IkTargetLeft.rotation);
+        }
     }
 }

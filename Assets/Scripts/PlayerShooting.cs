@@ -16,6 +16,7 @@ public class PlayerShooting : MonoBehaviour
     private float camRayLength = 100f;
     private Vector3 position;
     Quaternion shootRotation;
+    //public PlayerMovement player;
 
     private void Awake()
     {
