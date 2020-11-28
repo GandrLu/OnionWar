@@ -14,7 +14,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks
     private bool isReloading;
     private bool isReadyToFire;
     private float timeToReload = 0.7f;        // The time between each shot.
-    private float reloadTimer;
+    private float shotCooldownTimer;
     private int shootableMask;
     private float camRayLength = 100f;
     private Vector3 position;
@@ -42,6 +42,8 @@ public class PlayerShooting : MonoBehaviourPunCallbacks
 
         isAiming = Input.GetButton("Fire2");
         aimingLine.enabled = isAiming && isReadyToFire;
+        
+        ShotCooldown();
 
         if (isAiming)
             Aim();
@@ -50,25 +52,28 @@ public class PlayerShooting : MonoBehaviourPunCallbacks
 
         if (Input.GetButtonDown("Fire1") && isAiming && isReadyToFire)
             Shoot();
-        
-        Reload();
+    }
+    
+    private void ShotCooldown()
+    {
+        shotCooldownTimer -= Time.deltaTime;
+        if (shotCooldownTimer < 0)
+        {
+            isReadyToFire = true;
+            shotCooldownTimer = 0;
+        }
     }
 
-    private void Reload()
+    private void ResetShotCooldown()
     {
-        reloadTimer += Time.deltaTime;
-        if (reloadTimer >= timeToReload)
-        {
-            reloadTimer -= timeToReload;
-            isReadyToFire = true;
-        }
+        shotCooldownTimer += timeToReload;
+        isReadyToFire = false;
     }
 
     private void Shoot()
     {
-        isReadyToFire = false;
+        ResetShotCooldown();
         PhotonNetwork.Instantiate(projectile.name, position, shootRotation);
-        //Instantiate(projectile, position, shootRotation);
     }
 
     private void Aim()
