@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
+using Photon.Pun;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
 {
     public float m_Speed = 6f;            // The speed that the player will move at.
 
@@ -26,7 +27,43 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] Transform IkTargetRight;
     [SerializeField] Transform IkTargetLeft;
     [SerializeField] Transform Spine;
-    
+    Vector3 oldPosition = Vector3.zero;
+    Quaternion oldRotation = Quaternion.identity;
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            stream.SendNext(isAiming);
+        }
+        else
+        {
+            bool aiming = (bool)stream.ReceiveNext();
+            SetAimingAnimation(aiming);
+        }
+        //if (stream.IsWriting)
+        //{
+        //    stream.SendNext(transform.position);
+        //    stream.SendNext(transform.rotation);
+        //    //stream.SendNext(playerRigidbody.velocity);
+        //}
+        //else
+        //{
+        //    var movement = transform.position - oldPosition;
+        //    oldPosition = (Vector3)stream.ReceiveNext();
+        //    oldRotation = (Quaternion)stream.ReceiveNext();
+            
+        //    //playerRigidbody.position = (Vector3)stream.ReceiveNext();
+        //    //playerRigidbody.rotation = (Quaternion)stream.ReceiveNext();
+        //    //playerRigidbody.velocity = (Vector3)stream.ReceiveNext();
+
+        //    float lag = Mathf.Abs((float)(PhotonNetwork.Time - info.SentServerTime));
+        //    //playerRigidbody.position += playerRigidbody.velocity * lag;
+            
+        //    Vector3 networkPosition = lag * movement;
+        //    transform.position = Vector3.MoveTowards(transform.position, networkPosition, m_Speed * Time.deltaTime);
+        //}
+    }
 
     void Awake()
     {
@@ -42,10 +79,17 @@ public class PlayerMovement : MonoBehaviour
 
     private void Start()
     {
+        if (photonView.IsMine)
+            Camera.main.GetComponent<CameraFollow>().Target = transform;
         ChangeWeapon(weaponPrefab);
     }
 
     void Update(){
+        if (photonView.IsMine == false && PhotonNetwork.IsConnected == true)
+        {
+            return;
+        }
+
         // Store the input axes.
         h = Input.GetAxisRaw("Horizontal");
         v = Input.GetAxisRaw("Vertical");
@@ -57,20 +101,23 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (photonView.IsMine == false && PhotonNetwork.IsConnected == true)
+        {
+            return;
+        }
         // Move the player around the scene.
         Move(h, v, isAiming);
 
         // Turn the player to face the mouse cursor.
         Turning(true);
-
+        
         // Animate the player.
         Animating(h, v, isAiming);
-
     }
 
     void Move(float h, float v, bool aiming)
     {
-        float horizontalMovement = h * m_Speed * Time.deltaTime;
+        float horizontalMovement = h * m_Speed * Time.deltaTime * 0.6f;
         float verticalMovement = v * m_Speed * Time.deltaTime;
 
         if (aiming)
@@ -99,7 +146,7 @@ public class PlayerMovement : MonoBehaviour
                 horizontalMovement *= 2f;
             }
             transform.localPosition += transform.forward * verticalMovement;
-            transform.localPosition += transform.right * horizontalMovement;
+            //transform.localPosition += transform.right * horizontalMovement;
         }
     }
 
@@ -164,7 +211,9 @@ public class PlayerMovement : MonoBehaviour
     void Animating(float h, float v, bool aiming)
     {
         // Create a boolean that is true if either of the input axes is non-zero.
-        bool walking = v != 0f || h != 0f;
+        // Only considering vertical movement because in walking mode there is 
+        // no sideway movement.
+        bool walking = v != 0f;
 
         SetAimingAnimation(aiming);
 
@@ -186,6 +235,9 @@ public class PlayerMovement : MonoBehaviour
 
     private void SetAimingAnimation(bool aiming)
     {
+        if (weaponInHands == null)
+            return;
+
         if (aiming)
             weaponInHands.SetAimingTransform();
         else

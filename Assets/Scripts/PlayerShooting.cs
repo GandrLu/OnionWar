@@ -1,8 +1,9 @@
-﻿using System.Collections;
+﻿using Photon.Pun;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerShooting : MonoBehaviour
+public class PlayerShooting : MonoBehaviourPunCallbacks
 {
     [SerializeField]
     private LineRenderer aimingLine;
@@ -10,13 +11,15 @@ public class PlayerShooting : MonoBehaviour
     [SerializeField]
     private GameObject projectile;
     private bool isAiming;
-    private float timeBetweenBullets = 0.5f;        // The time between each shot.
-    private float timer;
+    private bool isReloading;
+    private bool isReadyToFire;
+    private float timeToReload = 0.7f;        // The time between each shot.
+    private float reloadTimer;
     private int shootableMask;
     private float camRayLength = 100f;
     private Vector3 position;
     Quaternion shootRotation;
-    //public PlayerMovement player;
+    public PlayerMovement player;
 
     private void Awake()
     {
@@ -30,25 +33,42 @@ public class PlayerShooting : MonoBehaviour
 
     private void Update()
     {
-        timer += Time.deltaTime;
+        if (player.photonView.IsMine == false && PhotonNetwork.IsConnected == true)
+        {
+            return;
+        }
+        // Store position for later methods
         position = transform.position;
 
         isAiming = Input.GetButton("Fire2");
-        aimingLine.enabled = isAiming;
+        aimingLine.enabled = isAiming && isReadyToFire;
 
         if (isAiming)
             Aim();
         else
             shootRotation = transform.rotation;
 
-        if (Input.GetButton("Fire1") && timer >= timeBetweenBullets)
+        if (Input.GetButtonDown("Fire1") && isAiming && isReadyToFire)
             Shoot();
+        
+        Reload();
+    }
+
+    private void Reload()
+    {
+        reloadTimer += Time.deltaTime;
+        if (reloadTimer >= timeToReload)
+        {
+            reloadTimer -= timeToReload;
+            isReadyToFire = true;
+        }
     }
 
     private void Shoot()
     {
-        timer = 0f;
-        Instantiate(projectile, position, shootRotation);
+        isReadyToFire = false;
+        PhotonNetwork.Instantiate(projectile.name, position, shootRotation);
+        //Instantiate(projectile, position, shootRotation);
     }
 
     private void Aim()
@@ -72,6 +92,7 @@ public class PlayerShooting : MonoBehaviour
         else
         {
             aimingLine.SetPosition(1, position + transform.forward * aimingDistance);
+            shootRotation = transform.rotation;
         }
     }
 }
