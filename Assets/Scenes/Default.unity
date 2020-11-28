@@ -112,25 +112,13 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &217795788 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 100000, guid: 766724ef4de6e2b41a3ec3ff24a78d95,
-    type: 3}
-  m_PrefabInstance: {fileID: 1082569231}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &217795790 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 400000, guid: 766724ef4de6e2b41a3ec3ff24a78d95,
-    type: 3}
-  m_PrefabInstance: {fileID: 1082569231}
-  m_PrefabAsset: {fileID: 0}
 --- !u!114 &217795791
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 217795788}
+  m_GameObject: {fileID: 1082602671}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73922c47a22349047b933ce37247b38c, type: 3}
@@ -143,7 +131,7 @@ CapsuleCollider:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 217795788}
+  m_GameObject: {fileID: 1082602671}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
@@ -157,7 +145,7 @@ Rigidbody:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 217795788}
+  m_GameObject: {fileID: 1082602671}
   serializedVersion: 2
   m_Mass: 80
   m_Drag: 0
@@ -328,6 +316,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!4 &1082173583 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 400000, guid: 766724ef4de6e2b41a3ec3ff24a78d95,
+    type: 3}
+  m_PrefabInstance: {fileID: 1082569231}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1082569231
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -338,6 +332,14 @@ PrefabInstance:
     - target: {fileID: 100000, guid: 766724ef4de6e2b41a3ec3ff24a78d95, type: 3}
       propertyPath: m_Name
       value: American_soldier_1
+      objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: 766724ef4de6e2b41a3ec3ff24a78d95, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 100018, guid: 766724ef4de6e2b41a3ec3ff24a78d95, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: 766724ef4de6e2b41a3ec3ff24a78d95, type: 3}
       propertyPath: m_LocalPosition.x
@@ -387,8 +389,18 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: eff45990705356f43af109edbd8cc2a1, type: 2}
+    - target: {fileID: 100156, guid: 766724ef4de6e2b41a3ec3ff24a78d95, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 766724ef4de6e2b41a3ec3ff24a78d95, type: 3}
+--- !u!1 &1082602671 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100000, guid: 766724ef4de6e2b41a3ec3ff24a78d95,
+    type: 3}
+  m_PrefabInstance: {fileID: 1082569231}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1835414188
 GameObject:
   m_ObjectHideFlags: 0
@@ -484,5 +496,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d61c7d8d22e15c498e4f0cf2c0e6a03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 217795790}
+  target: {fileID: 1082173583}
   smoothing: 5
