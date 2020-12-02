@@ -5,31 +5,26 @@ using UnityEngine;
 
 public class PlayerShooting : MonoBehaviourPunCallbacks
 {
-    [SerializeField]
-    private LineRenderer aimingLine;
-    private float aimingDistance = 30f;
-    [SerializeField]
-    private GameObject projectile;
+    public PlayerMovement player;
+    [SerializeField] LineRenderer aimingLine;
     private bool isAiming;
     private bool isReloading;
     private bool isReadyToFire;
+    private int shootableMask;
+    private float aimingDistance = 30f;
     private float timeToReload = 0.7f;        // The time between each shot.
     private float shotCooldownTimer;
-    private int shootableMask;
     private float camRayLength = 100f;
     private Vector3 position;
-    Quaternion shootRotation;
-    public PlayerMovement player;
+    private Quaternion shootRotation;
+    // RaycastHit variable to store information about what was hit by the aiming ray.
+    private RaycastHit shootableHit;
 
     private void Awake()
     {
         shootableMask = LayerMask.GetMask("Shootable");
         aimingLine = GetComponent<LineRenderer>();
     }
-
-    //private void Start()
-    //{
-    //}
 
     private void Update()
     {
@@ -73,7 +68,15 @@ public class PlayerShooting : MonoBehaviourPunCallbacks
     private void Shoot()
     {
         ResetShotCooldown();
-        PhotonNetwork.Instantiate(projectile.name, position, shootRotation);
+        if (shootableHit.collider == null)
+            return;
+
+        var hitBox = shootableHit.collider.GetComponent<HitBox>();
+        if (hitBox != null)
+        {
+            hitBox.Hit();
+            Debug.Log("Shoot " + shootableHit.collider.name);
+        }
     }
 
     private void Aim()
@@ -82,10 +85,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks
         // Create a ray from the mouse cursor on screen in the direction of the camera.
         Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-        // Create a RaycastHit variable to store information about what was hit by the ray.
-        RaycastHit shootableHit;
-
-        // Perform the raycast and if it hits something on the floor layer...
+        // Perform the raycast and if it hits something on the shootable layer...
         if (Physics.Raycast(camRay, out shootableHit, camRayLength, shootableMask))
         {
             Vector3 aimingVector = shootableHit.point - position;

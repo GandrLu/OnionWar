@@ -10,8 +10,9 @@ public class PractisingTarget : Destructable, IPunObservable
     private float reactivateTimer;
     private bool isTargetActive;
 
-    void Start()
+    new void Start()
     {
+        base.Start();
         if (targetElement == null)
             throw new MissingReferenceException();
         ActivateTarget(true);
@@ -43,7 +44,7 @@ public class PractisingTarget : Destructable, IPunObservable
             reactivateTimer = reactivationTime;
     }
 
-    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    public new void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
         if (stream.IsWriting)
         {
@@ -54,6 +55,5 @@ public class PractisingTarget : Destructable, IPunObservable
             var active = (bool)stream.ReceiveNext();
             targetElement.SetActive(active);
         }
-        //throw new System.NotImplementedException();
     }
 }
