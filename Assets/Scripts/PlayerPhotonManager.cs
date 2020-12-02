@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerPhotonManager : MonoBehaviour
 {
+    //TODO Is this file needed?
     #region Public Fields
     public static GameObject LocalPlayerInstance;
     #endregion

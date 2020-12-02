@@ -1,25 +1,28 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Photon.Pun;
 
 public class HitBox : MonoBehaviour
 {
     [SerializeField] string damagingTag = "Damaging";
     [SerializeField] float defaultDamage;
     private Destructable associatedDestructable;
+    private bool isHit;
 
-    void Start()
+    void Awake()
     {
-        associatedDestructable = GetComponentInParent<Destructable>();
+        associatedDestructable = GetComponent<Destructable>();
+        if (associatedDestructable == null)
+        {
+            associatedDestructable = GetComponentInParent<Destructable>();
+        }
         if (associatedDestructable == null)
             throw new MissingReferenceException();
     }
 
-    private void OnTriggerEnter(Collider other)
+    public void Hit()
     {
-        if (other.tag == damagingTag)
-        {
-            associatedDestructable.InflictDamage(defaultDamage);
-        }
+        associatedDestructable.PhotonView.RPC("InflictDamage", RpcTarget.All, defaultDamage);
     }
 }
