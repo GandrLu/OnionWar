@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/LandscapeEnvironment.unity
     guid: 032950caa6565ec44bfe5fbde8b99503
+  - enabled: 1
+    path: Assets/Scenes/TestField.unity
+    guid: cde1e7e9dae91024b91beba4de162598
   m_configObjects: {}
