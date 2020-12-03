@@ -1,0 +1,29 @@
+fileFormatVersion: 2
+guid: ea2e6c7493f224c4ca4fb447a2ff038e
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Big Shoulders Stencil Text
+  fontNames:
+  - Big Shoulders Stencil Text
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: f5a132f11afca574e846030d335b723b, type: 3}
+  - {fileID: 12800000, guid: c1f7fcc240e8fa641952e1e38bd45c64, type: 3}
+  - {fileID: 12800000, guid: 78b097d3ad813814db57a825bb4e4da6, type: 3}
+  - {fileID: 12800000, guid: 964ed035ea093724a90018248584feaf, type: 3}
+  - {fileID: 12800000, guid: 81a87868b58c99b4daa4ea295679a21e, type: 3}
+  - {fileID: 12800000, guid: b8724d1caae01254c8e6065414e47e73, type: 3}
+  - {fileID: 12800000, guid: 459d69bf6669d804f86150d8f8ea14f2, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
