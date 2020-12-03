@@ -635,6 +635,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Speed: 6
+  aimingSlownessFactor: 0.6
   weaponPrefab: {fileID: 5472521231795765137, guid: a03d133b2bab920458e2c89b644d2212,
     type: 3}
   handHold: {fileID: 7004147583061156005}
@@ -644,6 +645,7 @@ MonoBehaviour:
   IkTargetRight: {fileID: 0}
   IkTargetLeft: {fileID: 0}
   Spine: {fileID: 207593865145489821}
+  controlScheme: 0
 --- !u!114 &6883952479034378442
 MonoBehaviour:
   m_ObjectHideFlags: 0
