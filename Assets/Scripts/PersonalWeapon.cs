@@ -9,16 +9,30 @@ public enum PersonalWeaponType
 
 public class PersonalWeapon : MonoBehaviour
 {
-    [SerializeField]
-    private Vector3 aimingPosition;
-    [SerializeField]
-    private Vector3 aimingRotation;
-    [SerializeField]
-    private Vector3 holdingPosition;
-    [SerializeField]
-    private Vector3 holdingRotation;
-    [SerializeField]
-    private PersonalWeaponType weaponType;
+    [SerializeField] Vector3 aimingPosition;
+    [SerializeField] Vector3 aimingRotation;
+    [SerializeField] Vector3 holdingPosition;
+    [SerializeField] Vector3 holdingRotation;
+    [SerializeField] PersonalWeaponType weaponType;
+    private LineRenderer aimingLine;
+    private ParticleSystem muzzleFlash;
+    private Transform shootingPosition;
+
+    public LineRenderer AimingLine { get => aimingLine; set => aimingLine = value; }
+    public ParticleSystem MuzzleFlash { get => muzzleFlash; set => muzzleFlash = value; }
+    public Transform ShootingPosition { get => shootingPosition; set => shootingPosition = value; }
+    public PersonalWeaponType WeaponType { get => weaponType; set => weaponType = value; }
+
+    private void Awake()
+    {
+        AimingLine = GetComponentInChildren<LineRenderer>();
+        if (AimingLine == null)
+            throw new MissingReferenceException("Aiming line renderer missing!");
+        MuzzleFlash = GetComponentInChildren<ParticleSystem>();
+        if (MuzzleFlash == null)
+            throw new MissingReferenceException("Muzzle flash particle system missing!");
+        ShootingPosition = AimingLine.transform;
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -42,10 +56,5 @@ public class PersonalWeapon : MonoBehaviour
     {
         transform.localPosition = aimingPosition;
         transform.localRotation = Quaternion.Euler(aimingRotation);
-    }
-
-    public PersonalWeaponType GetWeaponType()
-    {
-        return weaponType;
     }
 }

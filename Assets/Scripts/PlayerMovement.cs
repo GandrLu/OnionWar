@@ -23,12 +23,6 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     private float h;
     private float v;
     private bool isAiming;
-    [SerializeField]
-    private GameObject weaponPrefab;
-    [SerializeField]
-    private Transform handHold;
-    private PersonalWeapon weaponInHands;
-    public Transform aimingPlane;
     public Vector3 aimingAtShootableDirection;
     public bool aimingAtShootable;
     [SerializeField] Transform IkTargetRight;
@@ -41,15 +35,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        if (stream.IsWriting)
-        {
-            stream.SendNext(isAiming);
-        }
-        else
-        {
-            bool aiming = (bool)stream.ReceiveNext();
-            SetAimingAnimation(aiming);
-        }
+
     }
 
     void Awake()
@@ -68,8 +54,6 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (photonView.IsMine)
             Camera.main.GetComponent<CameraFollow>().Target = transform;
-        // Initially equip a weapon
-        ChangeWeapon(weaponPrefab);
     }
 
     void Update()
@@ -177,36 +161,11 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         // no sideway movement.
         bool walking = IsWalking(h, v);
 
-        SetAimingAnimation(aiming);
-
         // Tell the animator whether or not the player is walking.
         anim.SetBool("IsWalking", walking);
         anim.SetBool("IsAiming", aiming);
         anim.SetFloat("vertical", v);
         anim.SetFloat("horizontal", h);
-    }
-
-    public void ChangeWeapon(GameObject weapon)
-    {
-        GameObject weaponObj = Instantiate(weapon, handHold, false);
-        weaponObj.GetComponentInChildren<PlayerShooting>().player = this;
-        weaponInHands = weaponObj.GetComponent<PersonalWeapon>();
-        weaponInHands.SetHoldingTransform();
-        aimingPlane.localPosition = new Vector3(0, weaponInHands.transform.position.y, 0);
-    }
-
-    private void SetAimingAnimation(bool aiming)
-    {
-        if (weaponInHands == null)
-            return;
-
-        if (aiming)
-            weaponInHands.SetAimingTransform();
-        else
-            weaponInHands.SetHoldingTransform();
-
-        string parameterName = "hand" + weaponInHands.GetWeaponType().ToString();
-        anim.SetBool(parameterName, aiming);
     }
 
     private void ApplyAimedMovement(float horizontal, float vertical)

@@ -3,10 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerShooting : MonoBehaviourPunCallbacks
+public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 {
-    public PlayerMovement player;
-    [SerializeField] LineRenderer aimingLine;
+    [SerializeField] GameObject weaponPrefab;
+    [SerializeField] Transform handHold;
+    [SerializeField] Transform aimingPlane;
+    private GameObject muzzleFlash;
+    private PlayerMovement playerMovement;
+    private LineRenderer aimingLine;
+    private Animator anim;
+    private PersonalWeapon weaponInHands;
+    private ParticleSystem muzzleFlashParticles;
     private bool isAiming;
     private bool isReloading;
     private bool isReadyToFire;
@@ -16,19 +23,26 @@ public class PlayerShooting : MonoBehaviourPunCallbacks
     private float shotCooldownTimer;
     private float camRayLength = 100f;
     private Vector3 position;
-    private Quaternion shootRotation;
+    private Vector3 shotPosition;
     // RaycastHit variable to store information about what was hit by the aiming ray.
     private RaycastHit shootableHit;
 
     private void Awake()
     {
         shootableMask = LayerMask.GetMask("Shootable");
-        aimingLine = GetComponent<LineRenderer>();
+        anim = GetComponent<Animator>();
+    }
+
+    private void Start()
+    {
+        // Initially equip weapon
+        ChangeWeapon(weaponPrefab);
     }
 
     private void Update()
     {
-        if (player.photonView.IsMine == false && PhotonNetwork.IsConnected == true)
+        if (photonView.IsMine == false && PhotonNetwork.IsConnected == true
+            || weaponInHands == null)
         {
             return;
         }
@@ -37,18 +51,21 @@ public class PlayerShooting : MonoBehaviourPunCallbacks
 
         isAiming = Input.GetButton("Fire2");
         aimingLine.enabled = isAiming && isReadyToFire;
-        
+
         ShotCooldown();
 
+        SetAimingAnimation(isAiming);
+
         if (isAiming)
+        {
+            shotPosition = weaponInHands.ShootingPosition.position;
             Aim();
-        else
-            shootRotation = transform.rotation;
+        }
 
         if (Input.GetButtonDown("Fire1") && isAiming && isReadyToFire)
             Shoot();
     }
-    
+
     private void ShotCooldown()
     {
         shotCooldownTimer -= Time.deltaTime;
@@ -68,36 +85,105 @@ public class PlayerShooting : MonoBehaviourPunCallbacks
     private void Shoot()
     {
         ResetShotCooldown();
-        if (shootableHit.collider == null)
-            return;
+        photonView.RPC("FlashMuzzle", RpcTarget.All);
+        //FlashMuzzle();
 
-        var hitBox = shootableHit.collider.GetComponent<HitBox>();
-        if (hitBox != null)
+        if (shootableHit.collider == null)
         {
-            hitBox.Hit();
-            Debug.Log("Shoot " + shootableHit.collider.name);
+            Ray shotRay = new Ray(shotPosition, transform.forward);
+            // Perform the raycast and if it hits something on the shootable layer...
+            if (Physics.Raycast(shotRay, out shootableHit, camRayLength, shootableMask))
+            {
+                var hitBox = shootableHit.collider.GetComponent<HitBox>();
+                if (hitBox != null)
+                {
+                    hitBox.Hit();
+                    Debug.Log("Shoot indirect " + shootableHit.collider.name);
+                }
+            }
+        }
+        else
+        {
+            
+            Ray shotRay = new Ray(shotPosition, shootableHit.point - shotPosition);
+
+            RaycastHit directShotHit;
+            if (Physics.Raycast(shotRay, out directShotHit, camRayLength, shootableMask))
+            {
+                var hitBox = directShotHit.collider.GetComponent<HitBox>();
+                if (hitBox != null)
+                {
+                    hitBox.Hit();
+                    Debug.Log("Shoot direct " + directShotHit.collider.name);
+                }
+            }
         }
     }
 
     private void Aim()
     {
-        aimingLine.SetPosition(0, position);
+        aimingLine.SetPosition(0, shotPosition);
         // Create a ray from the mouse cursor on screen in the direction of the camera.
         Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
 
         // Perform the raycast and if it hits something on the shootable layer...
         if (Physics.Raycast(camRay, out shootableHit, camRayLength, shootableMask))
         {
-            Vector3 aimingVector = shootableHit.point - position;
-            shootRotation = Quaternion.LookRotation(aimingVector);
+            Vector3 aimingVector = shootableHit.point - shotPosition;
             //Debug.Log("Pos " + playerToMouse);
             //Debug.Log("ScreenRay " + shootableHit.point);
             aimingLine.SetPosition(1, shootableHit.point);
         }
         else
         {
-            aimingLine.SetPosition(1, position + transform.forward * aimingDistance);
-            shootRotation = transform.rotation;
+            aimingLine.SetPosition(1, shotPosition + transform.forward * aimingDistance);
         }
+    }
+
+    [PunRPC]
+    public void FlashMuzzle()
+    {
+        muzzleFlashParticles.Play();
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            stream.SendNext(isAiming);
+        }
+        else
+        {
+            bool aiming = (bool)stream.ReceiveNext();
+            SetAimingAnimation(aiming);
+        }
+    }
+
+    public void ChangeWeapon(GameObject weapon)
+    {
+        //if (!photonView.IsMine)
+        //    return;
+        GameObject weaponObj = Instantiate(weapon, handHold, false);
+        //GameObject weaponObj = PhotonNetwork.Instantiate(weaponPrefab.name, Vector3.zero, Quaternion.identity);
+        //weaponObj.transform.SetParent(handHold, false);
+        weaponInHands = weaponObj.GetComponent<PersonalWeapon>();
+        muzzleFlashParticles = weaponInHands.MuzzleFlash;
+        aimingLine = weaponInHands.AimingLine;
+        weaponInHands.SetHoldingTransform();
+        aimingPlane.localPosition = new Vector3(0, weaponInHands.transform.position.y, 0);
+    }
+
+    private void SetAimingAnimation(bool aiming)
+    {
+        if (weaponInHands == null)
+            return;
+
+        if (aiming)
+            weaponInHands.SetAimingTransform();
+        else
+            weaponInHands.SetHoldingTransform();
+
+        string parameterName = "hand" + weaponInHands.WeaponType.ToString();
+        anim.SetBool(parameterName, aiming);
     }
 }
