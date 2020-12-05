@@ -33,7 +33,6 @@ public class GameManager : MonoBehaviourPunCallbacks
                 Debug.LogFormat("Ignoring scene load for {0}", SceneManagerHelper.ActiveSceneName);
             }
         }
-        PhotonNetwork.InstantiateSceneObject("Target", new Vector3(10f, 0.1f, 10f), Quaternion.identity, 0);
     }
     #endregion
 
