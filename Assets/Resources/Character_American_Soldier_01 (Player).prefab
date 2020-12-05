@@ -557,10 +557,11 @@ GameObject:
   - component: {fileID: 262265782200294409}
   - component: {fileID: 8668872532701841439}
   - component: {fileID: 8668872532701841433}
+  - component: {fileID: 345843909383680635}
+  - component: {fileID: 7125913363120022919}
   - component: {fileID: 6883952479034378442}
   - component: {fileID: 6886613070613453669}
   - component: {fileID: 6072758513696523238}
-  - component: {fileID: 7125913363120022919}
   m_Layer: 10
   m_Name: Character_American_Soldier_01 (Player)
   m_TagString: Enemy
@@ -636,16 +637,41 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Speed: 6
   aimingSlownessFactor: 0.6
-  weaponPrefab: {fileID: 5472521231795765137, guid: a03d133b2bab920458e2c89b644d2212,
-    type: 3}
-  handHold: {fileID: 7004147583061156005}
-  aimingPlane: {fileID: 211899156918901731}
   aimingAtShootableDirection: {x: 0, y: 0, z: 0}
   aimingAtShootable: 0
   IkTargetRight: {fileID: 0}
   IkTargetLeft: {fileID: 0}
   Spine: {fileID: 207593865145489821}
   controlScheme: 0
+--- !u!114 &345843909383680635
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 212966977914230859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbf27183a025a51499b53de77459ba73, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weaponPrefab: {fileID: 5472521231795765137, guid: a03d133b2bab920458e2c89b644d2212,
+    type: 3}
+  handHold: {fileID: 7004147583061156005}
+  aimingPlane: {fileID: 211899156918901731}
+--- !u!114 &7125913363120022919
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 212966977914230859}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5dde84d06bda0647b4f8b032f2dd2f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lifepoints: 100
 --- !u!114 &6883952479034378442
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -667,6 +693,7 @@ MonoBehaviour:
   - {fileID: 6886613070613453669}
   - {fileID: 6072758513696523238}
   - {fileID: 8668872532701841433}
+  - {fileID: 345843909383680635}
   viewIdField: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -750,19 +777,6 @@ MonoBehaviour:
     InterpolateOption: 0
     InterpolateMoveTowardsSpeed: 1
     InterpolateLerpSpeed: 0
---- !u!114 &7125913363120022919
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 212966977914230859}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f5dde84d06bda0647b4f8b032f2dd2f4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  lifepoints: 100
 --- !u!1 &213013088759592679
 GameObject:
   m_ObjectHideFlags: 0

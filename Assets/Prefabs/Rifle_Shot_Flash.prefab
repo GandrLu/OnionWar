@@ -41,7 +41,7 @@ ParticleSystem:
   m_GameObject: {fileID: 1824387451566454933}
   serializedVersion: 6
   lengthInSec: 0.5
-  simulationSpeed: 5
+  simulationSpeed: 8
   stopAction: 0
   cullingMode: 0
   ringBufferMode: 0
@@ -4709,7 +4709,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d167ef288d96bb84ca9743bf908f53cf, type: 2}
+  - {fileID: 2100000, guid: 43661ff2635bdc947b87d5d0f816367e, type: 2}
   - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
@@ -4796,8 +4796,8 @@ ParticleSystem:
   m_GameObject: {fileID: 2402236553011775884}
   serializedVersion: 6
   lengthInSec: 0.5
-  simulationSpeed: 5
-  stopAction: 0
+  simulationSpeed: 8
+  stopAction: 2
   cullingMode: 0
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
@@ -9464,7 +9464,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d167ef288d96bb84ca9743bf908f53cf, type: 2}
+  - {fileID: 2100000, guid: 43661ff2635bdc947b87d5d0f816367e, type: 2}
   - {fileID: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
