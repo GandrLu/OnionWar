@@ -3,10 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerShooting : MonoBehaviourPunCallbacks
+public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 {
     public PlayerMovement player;
     [SerializeField] LineRenderer aimingLine;
+    [SerializeField] GameObject muzzleFlash;
+    ParticleSystem muzzleFlashParticles;
     private bool isAiming;
     private bool isReloading;
     private bool isReadyToFire;
@@ -19,16 +21,21 @@ public class PlayerShooting : MonoBehaviourPunCallbacks
     private Quaternion shootRotation;
     // RaycastHit variable to store information about what was hit by the aiming ray.
     private RaycastHit shootableHit;
+    PhotonView photonView;
 
     private void Awake()
     {
         shootableMask = LayerMask.GetMask("Shootable");
         aimingLine = GetComponent<LineRenderer>();
+        if (muzzleFlash == null)
+            throw new MissingReferenceException();
+        muzzleFlashParticles = muzzleFlash.GetComponent<ParticleSystem>();
+        photonView = GetComponentInParent<PhotonView>();
     }
 
     private void Update()
     {
-        if (player.photonView.IsMine == false && PhotonNetwork.IsConnected == true)
+        if (photonView.IsMine == false && PhotonNetwork.IsConnected == true)
         {
             return;
         }
@@ -37,7 +44,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks
 
         isAiming = Input.GetButton("Fire2");
         aimingLine.enabled = isAiming && isReadyToFire;
-        
+
         ShotCooldown();
 
         if (isAiming)
@@ -48,7 +55,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks
         if (Input.GetButtonDown("Fire1") && isAiming && isReadyToFire)
             Shoot();
     }
-    
+
     private void ShotCooldown()
     {
         shotCooldownTimer -= Time.deltaTime;
@@ -68,14 +75,37 @@ public class PlayerShooting : MonoBehaviourPunCallbacks
     private void Shoot()
     {
         ResetShotCooldown();
-        if (shootableHit.collider == null)
-            return;
+        photonView.RPC("FlashMuzzle", RpcTarget.All);
+        //FlashMuzzle();
 
-        var hitBox = shootableHit.collider.GetComponent<HitBox>();
-        if (hitBox != null)
+        if (shootableHit.collider == null)
         {
-            hitBox.Hit();
-            Debug.Log("Shoot " + shootableHit.collider.name);
+            Ray shotRay = new Ray(position, transform.forward);
+            // Perform the raycast and if it hits something on the shootable layer...
+            if (Physics.Raycast(shotRay, out shootableHit, camRayLength, shootableMask))
+            {
+                var hitBox = shootableHit.collider.GetComponent<HitBox>();
+                if (hitBox != null)
+                {
+                    hitBox.Hit();
+                    Debug.Log("Shoot indirect " + shootableHit.collider.name);
+                }
+            }
+        }
+        else
+        {
+            Ray shotRay = new Ray(position, shootableHit.point - position);
+
+            RaycastHit directShotHit;
+            if (Physics.Raycast(shotRay, out directShotHit, camRayLength, shootableMask))
+            {
+                var hitBox = directShotHit.collider.GetComponent<HitBox>();
+                if (hitBox != null)
+                {
+                    hitBox.Hit();
+                    Debug.Log("Shoot direct " + directShotHit.collider.name);
+                }
+            }
         }
     }
 
@@ -99,5 +129,16 @@ public class PlayerShooting : MonoBehaviourPunCallbacks
             aimingLine.SetPosition(1, position + transform.forward * aimingDistance);
             shootRotation = transform.rotation;
         }
+    }
+
+    [PunRPC]
+    public void FlashMuzzle()
+    {
+        muzzleFlashParticles.Play();
+    }
+
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        
     }
 }
