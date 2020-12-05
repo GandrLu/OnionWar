@@ -11,6 +11,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
 
     [SerializeField] float m_Speed = 6f;            // The speed that the player will move at.
     [SerializeField] float aimingSlownessFactor = 0.6f;
+    [SerializeField] float sprintFactor = 1.5f;
     private Vector3 movement;                   // The vector to store the direction of the player's movement.
     private Animator anim;                      // Reference to the animator component.
     private Rigidbody playerRigidbody;          // Reference to the player's rigidbody.
@@ -112,22 +113,9 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     void Move(float h, float v, bool aiming)
     {
         if (aiming)
-        {
-            // Move the player to it's current position plus the movement.
-            //playerRigidbody.MovePosition (new Vector3(transform.localPosition.x * horizontalMovement, 0, transform.localPosition.z * verticalMovement));
-            
-            var absoluteMovement = new Vector3(h, 0, v).normalized;
-            absoluteMovement *= Time.deltaTime * m_Speed * aimingSlownessFactor;
-
-            var angle = Vector3.SignedAngle(Vector3.forward, transform.forward, Vector3.up);
-            Vector3 alignedMovement = Quaternion.Euler(0, angle, 0) * absoluteMovement;
-            
-            transform.localPosition += alignedMovement;
-        }
+            ApplyAimedMovement(h, v);
         else
-        {
             ApplyUnaimedMovement(h, v);
-        }
     }
 
     void Turning(bool aiming)
@@ -176,7 +164,9 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         }
         else if (controlScheme == ControlScheme.screenAligned)
         {
-            transform.rotation = Quaternion.LookRotation(movement);
+            var rotate = new Vector3(h, 0, v);
+            if (rotate != Vector3.zero)
+                transform.forward = rotate;
         }
     }
 
@@ -219,31 +209,47 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         anim.SetBool(parameterName, aiming);
     }
 
-    private void ApplyUnaimedMovement(float horizontal, float vertical)
+    private void ApplyAimedMovement(float horizontal, float vertical)
     {
         if (controlScheme == ControlScheme.bodyDirect)
         {
-            float horizontalMovement = horizontal * m_Speed * Time.deltaTime;
-            float verticalMovement = vertical * m_Speed * Time.deltaTime;
+            var absoluteMovement = new Vector3(horizontal, 0, vertical).normalized;
+            absoluteMovement *= Time.fixedDeltaTime * m_Speed * aimingSlownessFactor;
 
-            if (m_IsSprinting)
-            {
-                verticalMovement *= 2f;
-                horizontalMovement *= 2f;
-            }
-            transform.localPosition += transform.forward * verticalMovement;
-            //transform.localPosition += transform.right * horizontalMovement;
+            var angle = Vector3.SignedAngle(Vector3.forward, transform.forward, Vector3.up);
+            Vector3 alignedMovement = Quaternion.Euler(0, angle, 0) * absoluteMovement;
+
+            playerRigidbody.MovePosition(playerRigidbody.position + alignedMovement);
         }
         else if (controlScheme == ControlScheme.screenAligned)
         {
             movement = new Vector3(h, 0, v).normalized;
-            Debug.Log("Movement " + movement + " Normalized " + movement * m_Speed * Time.deltaTime);
-            movement *= m_Speed * Time.deltaTime;
+            movement *= Time.fixedDeltaTime * m_Speed * aimingSlownessFactor;
+            playerRigidbody.MovePosition(playerRigidbody.position + movement);
+
+        }
+    }
+
+    private void ApplyUnaimedMovement(float horizontal, float vertical)
+    {
+        if (controlScheme == ControlScheme.bodyDirect)
+        {
             if (m_IsSprinting)
             {
-                movement *= 2f;
+                vertical *= sprintFactor;
+                //horizontal *= sprintFactor;
             }
-            transform.localPosition += movement;
+            playerRigidbody.MovePosition(playerRigidbody.position + transform.forward * vertical * m_Speed * Time.fixedDeltaTime);
+        }
+        else if (controlScheme == ControlScheme.screenAligned)
+        {
+            movement = new Vector3(h, 0, v).normalized;
+            movement *= m_Speed * Time.fixedDeltaTime;
+            if (m_IsSprinting)
+            {
+                movement *= sprintFactor;
+            }
+            playerRigidbody.MovePosition(playerRigidbody.position + movement);
         }
     }
     private bool IsWalking(float h, float v)
