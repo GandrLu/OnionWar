@@ -4,12 +4,23 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Photon.Pun;
 using Photon.Realtime;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviourPunCallbacks
 {
     #region Public Fields
     public static GameManager Instance;
     public GameObject playerPrefab;
+    #endregion
+    #region Private Fields
+    [SerializeField] ToggleGroup spawnToggleGroup;
+    [SerializeField] Button spawnConfirmButton;
+    private GameObject spawnCanvas;
+    private GameObject player;
+    private Vector3 spawnPosition;
+    private float mapImageScaleFactor = 5.5f;
+    private bool isSpawnReady;
+    private bool isPlayerDead;
     #endregion
 
     #region Unity Callbacks
@@ -26,12 +37,41 @@ public class GameManager : MonoBehaviourPunCallbacks
             {
                 Debug.LogFormat("We are Instantiating LocalPlayer from {0}", SceneManager.GetActiveScene().name);
                 // we're in a room. spawn a character for the local player. it gets synced by using PhotonNetwork.Instantiate
-                PhotonNetwork.Instantiate(playerPrefab.name, new Vector3(0f, 0.1f, 0f), Quaternion.identity, 0);
+                player = PhotonNetwork.Instantiate(playerPrefab.name, new Vector3(0, -100, 0), Quaternion.identity, 0);
+                player.SetActive(false);
             }
             else
             {
                 Debug.LogFormat("Ignoring scene load for {0}", SceneManagerHelper.ActiveSceneName);
             }
+
+        }
+        spawnCanvas = GetComponentInChildren<Canvas>().gameObject;
+        spawnConfirmButton.onClick.AddListener(SetSpawnReady);
+        isPlayerDead = true;
+    }
+
+    private void Update()
+    {
+        spawnCanvas.SetActive(isPlayerDead);
+        if (isPlayerDead)
+        {
+            if (spawnToggleGroup.AnyTogglesOn())
+            {
+                foreach (var toggle in spawnToggleGroup.ActiveToggles())
+                {
+                    if (toggle.isOn)
+                    {
+                        var togglePos = toggle.transform.localPosition;
+                        spawnPosition = new Vector3(togglePos.x, 0.2f, togglePos.y) / mapImageScaleFactor;
+                    }
+                }
+            }
+        }
+
+        if (isPlayerDead && isSpawnReady)
+        {
+            SpawnPlayer();
         }
     }
     #endregion
@@ -74,5 +114,25 @@ public class GameManager : MonoBehaviourPunCallbacks
     {
         PhotonNetwork.LeaveRoom();
     }
+
+    public void SetPlayerDead()
+    {
+        isPlayerDead = true;
+        isSpawnReady = false;
+    }
     #endregion
+
+    private void SpawnPlayer()
+    { 
+        player.transform.position = spawnPosition;
+        player.GetPhotonView().RPC("SetActive", RpcTarget.Others);
+        player.SetActive(true);
+        isPlayerDead = false;
+    }
+
+    private void SetSpawnReady()
+    {
+        if (spawnToggleGroup.AnyTogglesOn())
+            isSpawnReady = true;
+    }
 }

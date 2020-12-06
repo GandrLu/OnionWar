@@ -27,9 +27,10 @@ public class Destructable : MonoBehaviour
         Debug.Log($"{name} Damage: {damage} Life left: {currentLifepoints}");
 
         if (currentLifepoints <= 0)
-            Destruct();
+            photonView.RPC("Destruct", RpcTarget.All);
     }
 
+    [PunRPC]
     public virtual void Destruct()
     {
         Debug.Log("Killed " + gameObject.name);

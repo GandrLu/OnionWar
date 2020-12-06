@@ -30,6 +30,7 @@ public class PractisingTarget : Destructable, IPunObservable
         }
     }
 
+    [PunRPC]
     public override void Destruct()
     {
         currentLifepoints = lifepoints;
