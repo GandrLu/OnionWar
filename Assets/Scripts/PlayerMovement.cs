@@ -13,6 +13,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] float aimingSlownessFactor = 0.6f;
     [SerializeField] float sprintFactor = 1.5f;
     private Vector3 movement;                   // The vector to store the direction of the player's movement.
+    private Vector3 cameraRotation;
     private Animator anim;                      // Reference to the animator component.
     private Rigidbody playerRigidbody;          // Reference to the player's rigidbody.
     private int aimingPlaneMask;                      // A layer mask so that a ray can be cast just at gameobjects on the floor layer.
@@ -32,6 +33,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     Quaternion oldRotation = Quaternion.identity;
     // 0 is move in body direction, 1 is move in screen direction
     [SerializeField] ControlScheme controlScheme;
+    private Camera mainCamera;
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
@@ -53,7 +55,10 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     private void Start()
     {
         if (photonView.IsMine)
-            Camera.main.GetComponent<CameraFollow>().Target = transform;
+        {
+            mainCamera = Camera.main;
+            mainCamera.GetComponent<CameraFollow>().Target = transform;
+        }
     }
 
     void Update()
@@ -69,6 +74,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
 
         isAiming = Input.GetButton("Fire2");
         m_IsSprinting = Input.GetButton("Sprint");
+        cameraRotation = mainCamera.transform.rotation.eulerAngles;
 
         // Change control scheme with 1 and 2 on alphabetical keyboard
         if (Input.GetKeyDown(KeyCode.Alpha1))
@@ -107,8 +113,8 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         if (aiming || controlScheme == ControlScheme.bodyDirect)
         {
             // Create a ray from the mouse cursor on screen in the direction of the camera.
-            Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-            Vector3 worldPoint = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            Ray camRay = mainCamera.ScreenPointToRay(Input.mousePosition);
+            Vector3 worldPoint = mainCamera.ScreenToWorldPoint(Input.mousePosition);
             Vector3 lookDirection = worldPoint - playerRigidbody.position;
             float angle = Mathf.Atan2(lookDirection.y, lookDirection.x) * Mathf.Rad2Deg - 90f;
 
@@ -149,8 +155,9 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         else if (controlScheme == ControlScheme.screenAligned)
         {
             var rotate = new Vector3(h, 0, v);
-            if (rotate != Vector3.zero)
-                transform.forward = rotate;
+            var alignedRotate = Quaternion.Euler(0, cameraRotation.y, 0) * rotate;
+            if (alignedRotate != Vector3.zero)
+                transform.forward = alignedRotate;
         }
     }
 
@@ -184,8 +191,9 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         {
             movement = new Vector3(h, 0, v).normalized;
             movement *= Time.fixedDeltaTime * m_Speed * aimingSlownessFactor;
-            playerRigidbody.MovePosition(playerRigidbody.position + movement);
 
+            var alignedMovement = Quaternion.Euler(0, cameraRotation.y, 0) * movement;
+            playerRigidbody.MovePosition(playerRigidbody.position + alignedMovement);
         }
     }
 
@@ -208,7 +216,9 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
             {
                 movement *= sprintFactor;
             }
-            playerRigidbody.MovePosition(playerRigidbody.position + movement);
+
+            var alignedMovement = Quaternion.Euler(0, cameraRotation.y, 0) * movement;
+            playerRigidbody.MovePosition(playerRigidbody.position + alignedMovement);
         }
     }
     private bool IsWalking(float h, float v)

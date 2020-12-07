@@ -87,6 +87,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d61c7d8d22e15c498e4f0cf2c0e6a03, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_CameraOffsetZ: 7.5
+  zAxisCameraOffset: 7.5
+  maxCameraHeight: 15
+  minCameraHeight: 6
   smoothing: 5
+  rotationSpeed: 50
+  heightChangeSpeed: 20
   target: {fileID: 0}

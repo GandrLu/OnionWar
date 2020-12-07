@@ -262,8 +262,6 @@ MonoBehaviour:
   holdingPosition: {x: 12.6, y: -30.6, z: -1.7}
   holdingRotation: {x: 703.893, y: -44.51, z: -0.447}
   weaponType: 1
-  shootingPosition: {fileID: 8946140323445809975}
-  aimingLine: {fileID: 8946140323445809972}
 --- !u!1 &8946140323406741020
 GameObject:
   m_ObjectHideFlags: 0
@@ -344,7 +342,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9fb792f7344ee774d8b497abbbb6dbc0, type: 2}
+  - {fileID: 2100000, guid: d167ef288d96bb84ca9743bf908f53cf, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -412,7 +410,7 @@ LineRenderer:
       atime5: 0
       atime6: 0
       atime7: 0
-      m_Mode: 0
+      m_Mode: 1
       m_NumColorKeys: 2
       m_NumAlphaKeys: 2
     numCornerVertices: 0
@@ -420,7 +418,7 @@ LineRenderer:
     alignment: 0
     textureMode: 0
     shadowBias: 0
-    generateLightingData: 1
+    generateLightingData: 0
   m_UseWorldSpace: 1
   m_Loop: 0
 --- !u!1 &8946140323893446604

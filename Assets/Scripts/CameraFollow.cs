@@ -5,16 +5,16 @@ using UnityEngine;
 
 public class CameraFollow : MonoBehaviour {
 
-    [SerializeField]
-    private float m_CameraOffsetZ = 7.5f;
-    [SerializeField]
-	private float smoothing = 5f;
-    [SerializeField]
-	private Transform target;
+    [SerializeField] float zAxisCameraOffset = 7.5f;
+    [SerializeField] float maxCameraHeight = 15f;
+    [SerializeField] float minCameraHeight = 6f;
+    [SerializeField] float smoothing = 5f;
+    [SerializeField] float rotationSpeed = 50f;
+    [SerializeField] float heightChangeSpeed = 20f;
+    [SerializeField] Transform target;
     private bool is_FollowActive;
     private int m_ScreenWidth = 0;
-
-	Vector3 offset;
+	private Vector3 offset;
 
     public Transform Target
     {
@@ -39,36 +39,43 @@ public class CameraFollow : MonoBehaviour {
         Initialize();
 	}
 
-	void FixedUpdate()
+	void Update()
 	{
         if (!is_FollowActive)
             return;
-        Vector3 targetCamPos = Target.position + offset;
-		transform.position = Vector3.Lerp (transform.position, targetCamPos, smoothing + Time.fixedDeltaTime);
 
-        //if (Input.GetMouseButton(2))
-        //{
-        //    Debug.Log(Input.mousePosition);
-        //    if (Input.mousePosition.x < m_ScreenWidth / 2)
-        //    {
-        //        this.transform.RotateAround(target.position, Vector3.up, -5f);
-        //        Debug.Log("rotate+");
-        //    }
-        //    else
-        //    {
-        //        this.transform.RotateAround(target.position, Vector3.up, 5f);
-        //        Debug.Log("rotate-");
-        //    }
-        //}
-        //offset = transform.position - target.position;
-        
-        //transform.RotateAround(target.position, Vector3.up, target.rotation.eulerAngles.y);
+        // Must run before rotation
+        Vector3 targetCamPos = Target.position + offset;
+		transform.position = Vector3.Lerp (transform.position, targetCamPos, smoothing + Time.deltaTime);
+
+        // Camera rotation (must run before height)
+        bool rotateLeft = Input.GetButton("CamRotateLeft");
+        bool rotateRight = Input.GetButton("CamRotateRight");
+        if (rotateLeft && !rotateRight)
+        {
+            transform.RotateAround(target.position, Vector3.up, -rotationSpeed * Time.deltaTime);
+            offset = transform.position - target.position;
+        }
+        if (rotateRight && !rotateLeft)
+        {
+            transform.RotateAround(target.position, Vector3.up, rotationSpeed * Time.deltaTime);
+            offset = transform.position - target.position;
+        }
+
+        // Camera height
+        var scrollWheel = Input.GetAxis("Mouse ScrollWheel");
+        var heightChange = transform.forward * scrollWheel * heightChangeSpeed * heightChangeSpeed * Time.deltaTime;
+        if (offset.y < maxCameraHeight && scrollWheel < 0)
+            offset += heightChange;
+        if (offset.y > minCameraHeight && scrollWheel > 0)
+            offset += heightChange;
+
         transform.LookAt(Target);
 	}
 
     private void Initialize()
     {
-        transform.position = new Vector3(Target.position.x, transform.position.y, Target.position.z - m_CameraOffsetZ);
+        transform.position = new Vector3(Target.position.x, transform.position.y, Target.position.z - zAxisCameraOffset);
         transform.rotation.Set(0, Target.rotation.y, 0, 0);
         m_ScreenWidth = Screen.width;
         offset = transform.position - Target.position;
