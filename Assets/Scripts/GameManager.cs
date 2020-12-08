@@ -15,7 +15,8 @@ public class GameManager : MonoBehaviourPunCallbacks
     #region Private Fields
     [SerializeField] ToggleGroup spawnToggleGroup;
     [SerializeField] Button spawnConfirmButton;
-    private GameObject spawnCanvas;
+    [SerializeField] GameObject spawnCanvas;
+    [SerializeField] GameObject hudCanvas;
     private GameObject player;
     private Vector3 spawnPosition;
     private float mapImageScaleFactor = 5.5f;
@@ -46,7 +47,6 @@ public class GameManager : MonoBehaviourPunCallbacks
             }
 
         }
-        spawnCanvas = GetComponentInChildren<Canvas>().gameObject;
         spawnConfirmButton.onClick.AddListener(SetSpawnReady);
         isPlayerDead = true;
     }
