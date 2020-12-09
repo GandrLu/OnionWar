@@ -33,12 +33,13 @@ public class PractisingTarget : Destructable, IPunObservable
     [PunRPC]
     public override void Destruct()
     {
-        currentLifepoints = lifepoints;
+        CurrentLifepoints = lifepoints;
         ActivateTarget(false);
     }
 
     private void ActivateTarget(bool activate)
     {
+        Resurrect();
         isTargetActive = activate;
         targetElement.SetActive(activate);
         if (activate)

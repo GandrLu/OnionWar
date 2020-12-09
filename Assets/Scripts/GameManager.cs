@@ -17,7 +17,9 @@ public class GameManager : MonoBehaviourPunCallbacks
     [SerializeField] Button spawnConfirmButton;
     [SerializeField] GameObject spawnCanvas;
     [SerializeField] GameObject hudCanvas;
+    [SerializeField] Slider lifepointSlider;
     private GameObject player;
+    private PlayerDestructable playerDestructable;
     private Vector3 spawnPosition;
     private float mapImageScaleFactor = 5.5f;
     private bool isSpawnReady;
@@ -25,6 +27,12 @@ public class GameManager : MonoBehaviourPunCallbacks
     #endregion
 
     #region Unity Callbacks
+    private void Awake()
+    {
+        if (lifepointSlider == null)
+            throw new MissingReferenceException();
+    }
+
     private void Start()
     {
         Instance = this;
@@ -34,18 +42,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         }
         else
         {
-            if (PlayerPhotonManager.LocalPlayerInstance == null)
-            {
-                Debug.LogFormat("We are Instantiating LocalPlayer from {0}", SceneManager.GetActiveScene().name);
-                // we're in a room. spawn a character for the local player. it gets synced by using PhotonNetwork.Instantiate
-                player = PhotonNetwork.Instantiate(playerPrefab.name, new Vector3(0, -100, 0), Quaternion.identity, 0);
-                player.SetActive(false);
-            }
-            else
-            {
-                Debug.LogFormat("Ignoring scene load for {0}", SceneManagerHelper.ActiveSceneName);
-            }
-
+            InstantiatePlayer();
         }
         spawnConfirmButton.onClick.AddListener(SetSpawnReady);
         isPlayerDead = true;
@@ -54,6 +51,8 @@ public class GameManager : MonoBehaviourPunCallbacks
     private void Update()
     {
         spawnCanvas.SetActive(isPlayerDead);
+        hudCanvas.SetActive(!isPlayerDead);
+
         if (isPlayerDead)
         {
             if (spawnToggleGroup.AnyTogglesOn())
@@ -122,10 +121,30 @@ public class GameManager : MonoBehaviourPunCallbacks
     }
     #endregion
 
+    #region Private Methods
+    private void InstantiatePlayer()
+    {
+        if (PlayerPhotonManager.LocalPlayerInstance == null)
+        {
+            Debug.LogFormat("We are Instantiating LocalPlayer from {0}", SceneManager.GetActiveScene().name);
+            // we're in a room. spawn a character for the local player. it gets synced by using PhotonNetwork.Instantiate
+            player = PhotonNetwork.Instantiate(playerPrefab.name, new Vector3(0, -100, 0), Quaternion.identity, 0);
+            player.SetActive(false);
+            playerDestructable = player.GetComponent<PlayerDestructable>();
+            playerDestructable.DamageEvent.AddListener(UpdateHudLifepoints);
+        }
+        else
+        {
+            Debug.LogFormat("Ignoring scene load for {0}", SceneManagerHelper.ActiveSceneName);
+        }
+    }
+
     private void SpawnPlayer()
     { 
         player.transform.position = spawnPosition;
         player.GetPhotonView().RPC("SetActive", RpcTarget.Others);
+        lifepointSlider.value = lifepointSlider.maxValue;
+        playerDestructable.Resurrect();
         player.SetActive(true);
         isPlayerDead = false;
     }
@@ -135,4 +154,10 @@ public class GameManager : MonoBehaviourPunCallbacks
         if (spawnToggleGroup.AnyTogglesOn())
             isSpawnReady = true;
     }
+
+    private void UpdateHudLifepoints()
+    {
+        lifepointSlider.value = playerDestructable.CurrentLifepoints;
+    }
+    #endregion
 }

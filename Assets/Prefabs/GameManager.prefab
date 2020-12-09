@@ -2837,6 +2837,7 @@ MonoBehaviour:
   spawnConfirmButton: {fileID: 1521027050}
   spawnCanvas: {fileID: 274436934}
   hudCanvas: {fileID: 1744328308}
+  lifepointSlider: {fileID: 7593546210391590657}
 --- !u!1001 &7863597210592454378
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2977,3 +2978,15 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 7863597210592454378}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &7593546210391590657 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 306431641138110955, guid: 4e204e1010d467547a049ef9269f3e91,
+    type: 3}
+  m_PrefabInstance: {fileID: 7863597210592454378}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
