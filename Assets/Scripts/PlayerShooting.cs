@@ -8,35 +8,43 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] GameObject weaponPrefab;
     [SerializeField] Transform handHold;
     [SerializeField] Transform aimingPlane;
-    private GameObject muzzleFlash;
+    [SerializeField] float inaccuracyAcceleration = 2f;
+    [SerializeField] float inaccuracyDeceleration = 0.75f;
+    [SerializeField] float moveSpeedInaccuracyImpact = 3f;
+    [SerializeField] float inaccuracyShootImpact = 5f;
+
+    private Animator anim;
+    private AudioSource audioSource;
     private PlayerMovement playerMovement;
     private LineRenderer aimingLine;
-    private Animator anim;
     private PersonalWeapon weaponInHands;
     private ParticleSystem muzzleFlashParticles;
-    private bool isAiming;
-    private bool isReloading;
-    private bool isReadyToFire;
-    private int shootableMask;
-    private float aimingDistance = 30f;
-    private float timeToReload = 0.7f;        // The time between each shot.
-    private float shotCooldownTimer;
-    private float camRayLength = 100f;
-    private Vector3 position;
-    private Vector3 shotPosition;
     // RaycastHit variable to store information about what was hit by the aiming ray.
     private RaycastHit shootableHit;
+    private bool isAiming, isReloading, isReadyToFire;
+    private int shootableMask;
+    private float aimingDistance = 30f;
+    private float camRayLength = 100f;
+    private float currentInaccuracy;
+    private float timeToReload = 0.7f;        // The time between each shot.
+    private float reloadCooldownTimer, shotCooldownTimer;
+    private float playerMoveSpeed;
+    private Vector3 shotPosition;
 
     private void Awake()
     {
         shootableMask = LayerMask.GetMask("Shootable");
         anim = GetComponent<Animator>();
+        audioSource = GetComponent<AudioSource>();
+        playerMovement = GetComponent<PlayerMovement>();
     }
 
     private void Start()
     {
         // Initially equip weapon
         ChangeWeapon(weaponPrefab);
+        // Use in start to ensure weapon is loaded
+        GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
     }
 
     private void Update()
@@ -46,14 +54,23 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         {
             return;
         }
-        // Store position for later methods
-        position = transform.position;
 
+        // Timers
+        if (!isReadyToFire && !isReloading)
+            ShotCooldown();
+        if (isReloading)
+            ReloadCooldown();
+
+        // Inaccuracy of shooting
+        HandleInaccuracy();
+
+        // Reloading
+        if (weaponInHands.LoadedBullets <= 0 && !isReloading)
+            Reload();
+
+        // Aiming
         isAiming = Input.GetButton("Fire2");
-        aimingLine.enabled = isAiming && isReadyToFire;
-
-        ShotCooldown();
-
+        aimingLine.enabled = isAiming && isReadyToFire && !isReloading;
         SetAimingAnimation(isAiming);
 
         if (isAiming)
@@ -62,8 +79,27 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             Aim();
         }
 
-        if (Input.GetButtonDown("Fire1") && isAiming && isReadyToFire)
+        // Shooting
+        if (Input.GetButtonDown("Fire1") && isAiming && isReadyToFire && !isReloading)
             Shoot();
+    }
+
+    private void HandleInaccuracy()
+    {
+        playerMoveSpeed = playerMovement.Speed * moveSpeedInaccuracyImpact;
+
+        // Inaccuracy is increasing
+        if (playerMoveSpeed > currentInaccuracy)
+            currentInaccuracy =
+                Mathf.Lerp(currentInaccuracy, playerMoveSpeed, inaccuracyAcceleration * Time.deltaTime);
+        // Inaccuracy is decreasing
+        else
+            currentInaccuracy =
+                Mathf.Lerp(currentInaccuracy, playerMoveSpeed, inaccuracyDeceleration * Time.deltaTime);
+
+        if (currentInaccuracy < 0.00001f)
+            currentInaccuracy = 0f;
+        CursorManager.Instance.ResizeCrosshair(currentInaccuracy);
     }
 
     private void ShotCooldown()
@@ -78,44 +114,70 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
     private void ResetShotCooldown()
     {
-        shotCooldownTimer += timeToReload;
+        shotCooldownTimer += weaponInHands.TimeBetweenShots;
         isReadyToFire = false;
+    }
+
+    private void Reload()
+    {
+        reloadCooldownTimer += weaponInHands.ReloadTime;
+        GameManager.Instance.AmmoText.text = "Reload";
+        isReadyToFire = false;
+        isReloading = true;
+    }
+
+    private void ReloadCooldown()
+    {
+        reloadCooldownTimer -= Time.deltaTime;
+        if (reloadCooldownTimer < 0)
+        {
+            isReloading = false;
+            weaponInHands.LoadedBullets = weaponInHands.BulletChamberSize;
+            GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
+            reloadCooldownTimer = 0;
+            shotCooldownTimer = 0;
+        }
     }
 
     private void Shoot()
     {
+        // Inaccuracy
+        var x = inaccuracyShootImpact * 
+            Random.Range(-weaponInHands.Accuracy - currentInaccuracy, weaponInHands.Accuracy + currentInaccuracy);
+        var y = inaccuracyShootImpact *
+            Random.Range(-weaponInHands.Accuracy - currentInaccuracy, weaponInHands.Accuracy + currentInaccuracy);
+
         ResetShotCooldown();
         photonView.RPC("FlashMuzzle", RpcTarget.All);
-        //FlashMuzzle();
+        audioSource.PlayOneShot(audioSource.clip);
+        ReduceBullets();
+        currentInaccuracy += weaponInHands.Recoil;
 
         if (shootableHit.collider == null)
         {
-            Ray shotRay = new Ray(shotPosition, transform.forward);
+            var shotDirection = transform.forward + new Vector3(x, y, 0);
+            //Debug.DrawRay(shotPosition, shotDirection * 20, Color.blue, 60);
+            Ray shotRay = new Ray(shotPosition, shotDirection);
             // Perform the raycast and if it hits something on the shootable layer...
             if (Physics.Raycast(shotRay, out shootableHit, camRayLength, shootableMask))
             {
                 var hitBox = shootableHit.collider.GetComponent<HitBox>();
                 if (hitBox != null)
-                {
                     hitBox.Hit();
-                    Debug.Log("Shoot indirect " + shootableHit.collider.name);
-                }
             }
         }
         else
         {
-            
-            Ray shotRay = new Ray(shotPosition, shootableHit.point - shotPosition);
+            var shotDirection = shootableHit.point - shotPosition + new Vector3(x, y, 0);
+            //Debug.DrawRay(shotPosition, shotDirection * 10, Color.cyan, 60);
+            Ray shotRay = new Ray(shotPosition, shotDirection);
 
             RaycastHit directShotHit;
             if (Physics.Raycast(shotRay, out directShotHit, camRayLength, shootableMask))
             {
                 var hitBox = directShotHit.collider.GetComponent<HitBox>();
                 if (hitBox != null)
-                {
                     hitBox.Hit();
-                    Debug.Log("Shoot direct " + directShotHit.collider.name);
-                }
             }
         }
     }
@@ -161,11 +223,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
     public void ChangeWeapon(GameObject weapon)
     {
-        //if (!photonView.IsMine)
-        //    return;
         GameObject weaponObj = Instantiate(weapon, handHold, false);
-        //GameObject weaponObj = PhotonNetwork.Instantiate(weaponPrefab.name, Vector3.zero, Quaternion.identity);
-        //weaponObj.transform.SetParent(handHold, false);
         weaponInHands = weaponObj.GetComponent<PersonalWeapon>();
         muzzleFlashParticles = weaponInHands.MuzzleFlash;
         aimingLine = weaponInHands.AimingLine;
@@ -185,5 +243,11 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
         string parameterName = "hand" + weaponInHands.WeaponType.ToString();
         anim.SetBool(parameterName, aiming);
+    }
+
+    private void ReduceBullets()
+    {
+        --weaponInHands.LoadedBullets;
+        GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
     }
 }

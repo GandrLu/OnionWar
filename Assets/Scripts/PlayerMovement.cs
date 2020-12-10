@@ -34,6 +34,9 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     // 0 is move in body direction, 1 is move in screen direction
     [SerializeField] ControlScheme controlScheme;
     private Camera mainCamera;
+    private float speed;
+
+    public float Speed { get => speed; set => speed = value; }
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
@@ -67,7 +70,6 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         {
             return;
         }
-
         // Store the input axes.
         h = Input.GetAxisRaw("Horizontal");
         v = Input.GetAxisRaw("Vertical");
@@ -181,6 +183,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         {
             var absoluteMovement = new Vector3(horizontal, 0, vertical).normalized;
             absoluteMovement *= Time.fixedDeltaTime * m_Speed * aimingSlownessFactor;
+            speed = absoluteMovement.sqrMagnitude;
 
             var angle = Vector3.SignedAngle(Vector3.forward, transform.forward, Vector3.up);
             Vector3 alignedMovement = Quaternion.Euler(0, angle, 0) * absoluteMovement;
@@ -191,6 +194,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         {
             movement = new Vector3(h, 0, v).normalized;
             movement *= Time.fixedDeltaTime * m_Speed * aimingSlownessFactor;
+            speed = movement.sqrMagnitude;
 
             var alignedMovement = Quaternion.Euler(0, cameraRotation.y, 0) * movement;
             playerRigidbody.MovePosition(playerRigidbody.position + alignedMovement);
@@ -206,7 +210,10 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
                 vertical *= sprintFactor;
                 //horizontal *= sprintFactor;
             }
-            playerRigidbody.MovePosition(playerRigidbody.position + transform.forward * vertical * m_Speed * Time.fixedDeltaTime);
+            movement = transform.forward * vertical * m_Speed * Time.fixedDeltaTime;
+            speed = movement.sqrMagnitude;
+
+            playerRigidbody.MovePosition(playerRigidbody.position + movement);
         }
         else if (controlScheme == ControlScheme.screenAligned)
         {
@@ -216,6 +223,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
             {
                 movement *= sprintFactor;
             }
+            speed = movement.sqrMagnitude;
 
             var alignedMovement = Quaternion.Euler(0, cameraRotation.y, 0) * movement;
             playerRigidbody.MovePosition(playerRigidbody.position + alignedMovement);

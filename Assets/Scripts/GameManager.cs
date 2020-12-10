@@ -6,18 +6,20 @@ using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine.UI;
 
-public class GameManager : MonoBehaviourPunCallbacks
+public sealed class GameManager : MonoBehaviourPunCallbacks
 {
-    #region Public Fields
-    public static GameManager Instance;
-    public GameObject playerPrefab;
-    #endregion
-    #region Private Fields
+    #region Serialized Fields
+    [SerializeField] GameObject playerPrefab;
     [SerializeField] ToggleGroup spawnToggleGroup;
     [SerializeField] Button spawnConfirmButton;
     [SerializeField] GameObject spawnCanvas;
     [SerializeField] GameObject hudCanvas;
     [SerializeField] Slider lifepointSlider;
+    [SerializeField] Text ammoText;
+    #endregion
+    
+    #region Private Fields
+    private static GameManager instance;
     private GameObject player;
     private PlayerDestructable playerDestructable;
     private Vector3 spawnPosition;
@@ -25,6 +27,9 @@ public class GameManager : MonoBehaviourPunCallbacks
     private bool isSpawnReady;
     private bool isPlayerDead;
     #endregion
+
+    public Text AmmoText { get => ammoText; set => ammoText = value; }
+    public static GameManager Instance { get => instance; }
 
     #region Unity Callbacks
     private void Awake()
@@ -35,7 +40,7 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
-        Instance = this;
+        instance = this;
         if (playerPrefab == null)
         {
             Debug.LogError("<Color=Red><a>Missing</a></Color> playerPrefab Reference. Please set it up in GameObject 'Game Manager'", this);
