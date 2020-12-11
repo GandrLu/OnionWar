@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Launcher : MonoBehaviourPunCallbacks
 {
@@ -16,7 +17,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     #region Private Fields
 
     // This clients game version number
-    string gameVersion = "1";
+    string gameVersion = "0.2020_12";
 
     /// <summary>
     /// Keep track of the current process. Since connection is asynchronous and is based on several callbacks from Photon,
@@ -31,6 +32,8 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     [SerializeField] private GameObject controlPanel;
     [SerializeField] private GameObject progressLabel;
+    [SerializeField] private Button quitButton;
+    [SerializeField] private Text versionText;
 
     #endregion
 
@@ -39,12 +42,22 @@ public class Launcher : MonoBehaviourPunCallbacks
     private void Awake()
     {
         PhotonNetwork.AutomaticallySyncScene = true;
+        if (controlPanel == null)
+            throw new MissingReferenceException();
+        if (progressLabel == null)
+            throw new MissingReferenceException();
+        if (quitButton == null)
+            throw new MissingReferenceException();
+        if (versionText == null)
+            throw new MissingReferenceException();
+        quitButton.onClick.AddListener(QuitGame);
     }
 
     private void Start()
     {
         controlPanel.SetActive(true);
         progressLabel.SetActive(false);
+        versionText.text = "v" + gameVersion;
         //PhotonNetwork.SendRate = 40; // Default 20
         //PhotonNetwork.SerializationRate = 40; // Default 10
     }
@@ -111,5 +124,12 @@ public class Launcher : MonoBehaviourPunCallbacks
         }
     }
 
+    #endregion
+
+    #region Private Methods
+    private void QuitGame()
+    {
+        Application.Quit();
+    }
     #endregion
 }
