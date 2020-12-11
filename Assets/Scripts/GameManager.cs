@@ -24,6 +24,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     private PlayerDestructable playerDestructable;
     private Vector3 spawnPosition;
     private float mapImageScaleFactor = 5.5f;
+    private int cancelKeyHits;
     private bool isSpawnReady;
     private bool isPlayerDead;
     #endregion
@@ -76,6 +77,12 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         if (isPlayerDead && isSpawnReady)
         {
             SpawnPlayer();
+        }
+
+        if (Input.GetButtonDown("Cancel"))
+        {
+            if (++cancelKeyHits >= 2)
+                LeaveRoom();
         }
     }
     #endregion
