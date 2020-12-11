@@ -163,7 +163,11 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             {
                 var hitBox = shootableHit.collider.GetComponent<HitBox>();
                 if (hitBox != null)
+                {
                     hitBox.Hit();
+                    if (hitBox.HitEffect != null)
+                        Instantiate(hitBox.HitEffect, shootableHit.point, Quaternion.Euler(-shotDirection));
+                }
             }
         }
         else
@@ -177,7 +181,11 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             {
                 var hitBox = directShotHit.collider.GetComponent<HitBox>();
                 if (hitBox != null)
+                {
                     hitBox.Hit();
+                    if (hitBox.HitEffect != null)
+                        Instantiate(hitBox.HitEffect, directShotHit.point, Quaternion.FromToRotation(Vector3.forward, shotDirection));
+                }
             }
         }
     }

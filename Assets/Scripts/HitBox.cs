@@ -5,10 +5,13 @@ using Photon.Pun;
 
 public class HitBox : MonoBehaviour
 {
+    [SerializeField] GameObject hitEffect;
     [SerializeField] string damagingTag = "Damaging";
     [SerializeField] float defaultDamage;
     private Destructable associatedDestructable;
     private bool isHit;
+
+    public GameObject HitEffect { get => hitEffect; set => hitEffect = value; }
 
     void Awake()
     {
