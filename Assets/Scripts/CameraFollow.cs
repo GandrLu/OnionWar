@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraFollow : MonoBehaviour {
+public class CameraFollow : MonoBehaviour
+{
 
     [SerializeField] float zAxisCameraOffset = 7.5f;
     [SerializeField] float maxCameraHeight = 15f;
@@ -14,7 +15,7 @@ public class CameraFollow : MonoBehaviour {
     [SerializeField] Transform target;
     private bool is_FollowActive;
     private int m_ScreenWidth = 0;
-	private Vector3 offset;
+    private Vector3 offset;
 
     public Transform Target
     {
@@ -32,21 +33,35 @@ public class CameraFollow : MonoBehaviour {
         }
     }
 
-	void Start()
-	{
+    void Start()
+    {
+        var aspect = Camera.main.aspect;
+        // 1680 x 1050
+        if (Mathf.Abs(aspect - 1.6f) <= 0.01)
+            Camera.main.fieldOfView = 65;
+        // 1920 x 1080
+        else if (Mathf.Abs(aspect - 1.777f) <= 0.001)
+            Camera.main.fieldOfView = 60;
+        // 4:3
+        else if (Mathf.Abs(aspect - 1.5f) <= 0.001)
+            Camera.main.fieldOfView = 69;
+
         if (!is_FollowActive)
             return;
         Initialize();
-	}
+    }
 
-	void Update()
-	{
+    void Update()
+    {
         if (!is_FollowActive)
             return;
 
         // Must run before rotation
-        Vector3 targetCamPos = Target.position + offset;
-		transform.position = Vector3.Lerp (transform.position, targetCamPos, smoothing + Time.deltaTime);
+        if (Target != null)
+        {
+            Vector3 targetCamPos = Target.position + offset;
+            transform.position = Vector3.Lerp(transform.position, targetCamPos, smoothing + Time.deltaTime);
+        }
 
         // Camera rotation (must run before height)
         bool rotateLeft = Input.GetButton("CamRotateLeft");
@@ -71,7 +86,7 @@ public class CameraFollow : MonoBehaviour {
             offset += heightChange;
 
         transform.LookAt(Target);
-	}
+    }
 
     private void Initialize()
     {
@@ -79,5 +94,5 @@ public class CameraFollow : MonoBehaviour {
         transform.rotation.Set(0, Target.rotation.y, 0, 0);
         m_ScreenWidth = Screen.width;
         offset = transform.position - Target.position;
-	}
+    }
 }
