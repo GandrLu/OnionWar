@@ -563,7 +563,7 @@ GameObject:
   - component: {fileID: 6886613070613453669}
   - component: {fileID: 6072758513696523238}
   - component: {fileID: 5025936630006786295}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: Character_American_Soldier_01 (Player)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2070,7 +2070,7 @@ GameObject:
   - component: {fileID: 1709091940235562553}
   - component: {fileID: 8099507046334997046}
   - component: {fileID: 9042719628126662919}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: BodyHitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2131,7 +2131,7 @@ GameObject:
   - component: {fileID: 2381047380892764229}
   - component: {fileID: 2647312754258895530}
   - component: {fileID: 961221809602148201}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: HeadHitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1310331716}
   - component: {fileID: 4160444315637388293}
   - component: {fileID: 2507511592042647217}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: BodyHitBox
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -44,6 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c42e220ebbd1cb242ba4d44bc7461947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hitEffect: {fileID: 0}
   damagingTag: Damaging
   defaultDamage: 60
 --- !u!136 &2507511592042647217
@@ -71,7 +72,7 @@ GameObject:
   - component: {fileID: 1542447272}
   - component: {fileID: 29558161953091676}
   - component: {fileID: 2057402504226006721}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: HeadHitBox
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -104,6 +105,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c42e220ebbd1cb242ba4d44bc7461947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hitEffect: {fileID: 0}
   damagingTag: Damaging
   defaultDamage: 100
 --- !u!136 &2057402504226006721
@@ -132,7 +134,7 @@ GameObject:
   - component: {fileID: 1928736034705725381}
   - component: {fileID: 1937072663305330509}
   - component: {fileID: 8511053496983338365}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: SM_Prop_Crate_01
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -224,7 +226,7 @@ GameObject:
   - component: {fileID: 4001397727901884286}
   - component: {fileID: 4030590830739887666}
   - component: {fileID: 4018317612026185296}
-  m_Layer: 10
+  m_Layer: 0
   m_Name: SM_Prop_Target_01
   m_TagString: Enemy
   m_Icon: {fileID: 0}
