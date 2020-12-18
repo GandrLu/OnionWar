@@ -16,6 +16,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     [SerializeField] GameObject hudCanvas;
     [SerializeField] Slider lifepointSlider;
     [SerializeField] Text ammoText;
+    [SerializeField] int notShootableLayer;
     #endregion
     
     #region Private Fields
@@ -128,6 +129,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
             // we're in a room. spawn a character for the local player. it gets synced by using PhotonNetwork.Instantiate
             player = PhotonNetwork.Instantiate(playerPrefab.name, new Vector3(0, -100, 0), Quaternion.identity, 0);
             player.SetActive(false);
+            foreach (var hitbox in player.GetComponentsInChildren<HitBox>())
+                hitbox.gameObject.layer = notShootableLayer;
             playerDestructable = player.GetComponent<PlayerDestructable>();
             playerDestructable.DamageEvent.AddListener(UpdateHudLifepoints);
         }

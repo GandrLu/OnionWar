@@ -2118,7 +2118,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c42e220ebbd1cb242ba4d44bc7461947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hitEffect: {fileID: 166404, guid: 78e1c8c5b281b8b439229473779ac9aa, type: 3}
   damagingTag: Damaging
   defaultDamage: 50
 --- !u!1 &9107505994711919350
@@ -2179,7 +2178,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c42e220ebbd1cb242ba4d44bc7461947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hitEffect: {fileID: 166404, guid: 78e1c8c5b281b8b439229473779ac9aa, type: 3}
   damagingTag: Damaging
   defaultDamage: 100
 --- !u!1001 &5105333236654756618
