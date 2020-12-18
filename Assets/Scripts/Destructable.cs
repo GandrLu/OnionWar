@@ -7,11 +7,13 @@ using UnityEngine.Events;
 public class Destructable : MonoBehaviour
 {
     [SerializeField] protected float lifepoints = 100f;
+    [SerializeField] GameObject hitEffect;
     private float currentLifepoints;
     private PhotonView photonView;
     private UnityEvent damageEvent;
 
     public float CurrentLifepoints { get => currentLifepoints; set => currentLifepoints = value; }
+    public GameObject HitEffect { get => hitEffect; set => hitEffect = value; }
     public PhotonView PhotonView { get => photonView; set => photonView = value; }
     public UnityEvent DamageEvent
     {

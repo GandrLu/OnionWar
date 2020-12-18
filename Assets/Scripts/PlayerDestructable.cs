@@ -5,8 +5,8 @@ using UnityEngine;
 
 public class PlayerDestructable : Destructable
 {
-    PlayerMovement playerMovement;
-    PlayerShooting playerShooting;
+    private PlayerMovement playerMovement;
+    private PlayerShooting playerShooting;
 
     protected new void Start()
     {
@@ -25,6 +25,7 @@ public class PlayerDestructable : Destructable
             //playerMovement.enabled = false;
             //playerShooting.enabled = false;
             //GameManager.Instance.LeaveRoom();
+            // TODO: Reset player completely
             GameManager.Instance.SetPlayerDead();
         }
     }
@@ -33,5 +34,14 @@ public class PlayerDestructable : Destructable
     public void SetActive()
     {
         gameObject.SetActive(true);
+    }
+
+    [PunRPC]
+    public void PlayHitEffect(object[] parameters)
+    {
+        if (parameters.Length < 2)
+            return;
+        var effect = Instantiate(HitEffect, (Vector3)parameters[0], (Quaternion)parameters[1]);
+        Destroy(effect, 0.5f);
     }
 }

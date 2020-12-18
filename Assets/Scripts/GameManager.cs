@@ -99,24 +99,10 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player other)
     {
         Debug.LogFormat("OnPlayerEnteredRoom() {0}", other.NickName);
-
-        //if (PhotonNetwork.IsMasterClient)
-        //{
-        //    Debug.LogFormat("OnPlayerEnteredRoom IsMasterClient {0}", PhotonNetwork.IsMasterClient);
-
-        //    LoadArena();
-        //}
     }
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         Debug.LogFormat("OnPlayerLeftRoom(){0}", otherPlayer.NickName);
-
-        //if (PhotonNetwork.IsMasterClient)
-        //{
-        //    Debug.LogFormat("OnPlayerLeftRoom IsMasterClient {0}", PhotonNetwork.IsMasterClient);
-
-        //    LoadArena();
-        //}
     }
     #endregion
 

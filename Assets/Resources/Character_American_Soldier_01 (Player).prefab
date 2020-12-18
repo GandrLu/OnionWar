@@ -678,6 +678,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lifepoints: 100
+  hitEffect: {fileID: 166404, guid: 78e1c8c5b281b8b439229473779ac9aa, type: 3}
 --- !u!114 &6883952479034378442
 MonoBehaviour:
   m_ObjectHideFlags: 0
