@@ -66,7 +66,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
         // Reloading
         if (weaponInHands.LoadedBullets <= 0 && !isReloading)
-            Reload();
+            StartReload();
 
         // Aiming
         isAiming = Input.GetButton("Fire2");
@@ -118,7 +118,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         isReadyToFire = false;
     }
 
-    private void Reload()
+    private void StartReload()
     {
         reloadCooldownTimer += weaponInHands.ReloadTime;
         GameManager.Instance.AmmoText.text = "Reload";
@@ -130,13 +130,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     {
         reloadCooldownTimer -= Time.deltaTime;
         if (reloadCooldownTimer < 0)
-        {
-            isReloading = false;
-            weaponInHands.LoadedBullets = weaponInHands.BulletChamberSize;
-            GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
-            reloadCooldownTimer = 0;
-            shotCooldownTimer = 0;
-        }
+            ReloadWeapon();
     }
 
     private void Shoot()
@@ -201,6 +195,26 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
+    private void SetAimingAnimation(bool aiming)
+    {
+        if (weaponInHands == null)
+            return;
+
+        if (aiming)
+            weaponInHands.SetAimingTransform();
+        else
+            weaponInHands.SetHoldingTransform();
+
+        string parameterName = "hand" + weaponInHands.WeaponType.ToString();
+        anim.SetBool(parameterName, aiming);
+    }
+
+    private void ReduceBullets()
+    {
+        --weaponInHands.LoadedBullets;
+        GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
+    }
+
     [PunRPC]
     public void PlayShotEffects()
     {
@@ -231,23 +245,14 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         aimingPlane.localPosition = new Vector3(0, weaponInHands.transform.position.y, 0);
     }
 
-    private void SetAimingAnimation(bool aiming)
+    public void ReloadWeapon()
     {
         if (weaponInHands == null)
             return;
-
-        if (aiming)
-            weaponInHands.SetAimingTransform();
-        else
-            weaponInHands.SetHoldingTransform();
-
-        string parameterName = "hand" + weaponInHands.WeaponType.ToString();
-        anim.SetBool(parameterName, aiming);
-    }
-
-    private void ReduceBullets()
-    {
-        --weaponInHands.LoadedBullets;
+        isReloading = false;
+        weaponInHands.LoadedBullets = weaponInHands.BulletChamberSize;
         GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
+        reloadCooldownTimer = 0;
+        shotCooldownTimer = 0;
     }
 }

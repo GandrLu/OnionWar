@@ -5,14 +5,9 @@ using UnityEngine;
 
 public class PlayerDestructable : Destructable
 {
-    private PlayerMovement playerMovement;
-    private PlayerShooting playerShooting;
-
     protected new void Start()
     {
         base.Start();
-        playerMovement = GetComponent<PlayerMovement>();
-        playerShooting = GetComponent<PlayerShooting>();
     }
 
     [PunRPC]
@@ -22,10 +17,6 @@ public class PlayerDestructable : Destructable
         if (PhotonView.IsMine)
         {
             Debug.Log("Killed " + PhotonView.Owner.NickName);
-            //playerMovement.enabled = false;
-            //playerShooting.enabled = false;
-            //GameManager.Instance.LeaveRoom();
-            // TODO: Reset player completely
             GameManager.Instance.SetPlayerDead();
         }
     }

@@ -23,6 +23,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     private static GameManager instance;
     private GameObject player;
     private PlayerDestructable playerDestructable;
+    private PlayerMovement playerMovement;
+    private PlayerShooting playerShooting;
     private Vector3 spawnPosition;
     private float mapImageScaleFactor = 5.5f;
     private int cancelKeyHits;
@@ -117,6 +119,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     {
         isPlayerDead = true;
         isSpawnReady = false;
+        playerMovement.enabled = false;
+        playerShooting.enabled = false;
     }
     #endregion
 
@@ -133,6 +137,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
                 hitbox.gameObject.layer = notShootableLayer;
             playerDestructable = player.GetComponent<PlayerDestructable>();
             playerDestructable.DamageEvent.AddListener(UpdateHudLifepoints);
+            playerMovement = player.GetComponent<PlayerMovement>();
+            playerShooting = player.GetComponent<PlayerShooting>();
         }
         else
         {
@@ -146,7 +152,10 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         player.GetPhotonView().RPC("SetActive", RpcTarget.Others);
         lifepointSlider.value = lifepointSlider.maxValue;
         playerDestructable.Resurrect();
+        playerMovement.enabled = true;
+        playerShooting.enabled = true;
         player.SetActive(true);
+        playerShooting.ReloadWeapon();
         isPlayerDead = false;
     }
 
