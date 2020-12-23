@@ -2839,6 +2839,7 @@ MonoBehaviour:
   hudCanvas: {fileID: 1744328308}
   lifepointSlider: {fileID: 7593546210391590657}
   ammoText: {fileID: 964577631}
+  spawnText: {fileID: 0}
   notShootableLayer: 13
 --- !u!1001 &7863597210592454378
 PrefabInstance:

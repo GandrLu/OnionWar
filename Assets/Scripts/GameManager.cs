@@ -16,9 +16,10 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     [SerializeField] GameObject hudCanvas;
     [SerializeField] Slider lifepointSlider;
     [SerializeField] Text ammoText;
+    [SerializeField] Text spawnText;
     [SerializeField] int notShootableLayer;
     #endregion
-    
+
     #region Private Fields
     private static GameManager instance;
     private GameObject player;
@@ -27,6 +28,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     private PlayerShooting playerShooting;
     private Vector3 spawnPosition;
     private float mapImageScaleFactor = 5.5f;
+    private float spawnTimer;
+    private float spawnTime = 5f;
     private int cancelKeyHits;
     private bool isSpawnReady;
     private bool isPlayerDead;
@@ -59,7 +62,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
 
     private void Update()
     {
-        spawnCanvas.SetActive(isPlayerDead);
+        spawnCanvas.SetActive(isPlayerDead && spawnTimer <= 0f);
         hudCanvas.SetActive(!isPlayerDead);
 
         if (isPlayerDead)
@@ -77,7 +80,17 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
             }
         }
 
-        if (isPlayerDead && isSpawnReady)
+        if (isPlayerDead && spawnTimer > 0f)
+        {
+            spawnTimer -= Time.deltaTime;
+            spawnText.text = string.Format("{0:0}", spawnTimer);
+        }
+        else if(isPlayerDead && spawnTimer <= 0f)
+        {
+            spawnText.enabled = false;
+        }
+
+        if (isPlayerDead && isSpawnReady && spawnTimer <= 0f)
         {
             SpawnPlayer();
         }
@@ -121,6 +134,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         isSpawnReady = false;
         playerMovement.enabled = false;
         playerShooting.enabled = false;
+        spawnTimer += spawnTime;
+        spawnText.enabled = true;
     }
     #endregion
 
@@ -147,7 +162,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     }
 
     private void SpawnPlayer()
-    { 
+    {
         player.transform.position = spawnPosition;
         player.GetPhotonView().RPC("SetActive", RpcTarget.Others);
         lifepointSlider.value = lifepointSlider.maxValue;
@@ -157,6 +172,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         player.SetActive(true);
         playerShooting.ReloadWeapon();
         isPlayerDead = false;
+        //spawnText.enabled = false;
+        spawnTimer = 0f;
     }
 
     private void SetSpawnReady()
