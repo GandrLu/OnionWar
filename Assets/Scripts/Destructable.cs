@@ -54,7 +54,7 @@ public class Destructable : MonoBehaviour
         Destroy(gameObject);
     }
 
-    public void Resurrect()
+    public virtual void Resurrect()
     {
         CurrentLifepoints = lifepoints;
     }
