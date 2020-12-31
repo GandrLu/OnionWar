@@ -9,41 +9,55 @@ public class PlayerDestructable : Destructable
     [SerializeField] bool ragdollActive;
     [SerializeField] bool ragdollInactive;
     private Collider[] ragdollColliders = new Collider[0];
-    private Collider hitboxCollider;
+    private List<Collider> hitboxColliders = new List<Collider>();
+    private Rigidbody[] ragdollRigidbodies = new Rigidbody[0];
+    private Rigidbody mainRigidbody;
 
     protected new void Start()
     {
         base.Start();
-        //ragdollColliders = GetComponentsInChildren<Collider>();
-        //var colliderList = new List<Collider>(ragdollColliders);
-        //var mainCollider = GetComponentInChildren<HitBox>().GetComponent<Collider>();
-        //var aimingPlane = transform.Find("AimingPlane").GetComponent<Collider>();
-        //colliderList.Remove(mainCollider);
-        //colliderList.Remove(aimingPlane);
-        //ragdollColliders = colliderList.ToArray();
-        //hitboxCollider = mainCollider;
-        //EnableRagdoll(false);
-    }
+        mainRigidbody = GetComponent<Rigidbody>();
+        ragdollColliders = GetComponentsInChildren<Collider>();
+        ragdollRigidbodies = GetComponentsInChildren<Rigidbody>();
+        var rdColliderList = new List<Collider>(ragdollColliders);
+        
+        var rigidbodyList = new List<Rigidbody>(ragdollRigidbodies);
+        rigidbodyList.Remove(mainRigidbody);
+        ragdollRigidbodies = rigidbodyList.ToArray();
 
-    private void Update()
-    {
-        if (ragdollActive)
-            EnableRagdoll(ragdollActive);
-        if (ragdollInactive)
-            EnableRagdoll(!ragdollInactive);
+        var hitboxes = GetComponentsInChildren<HitBox>();
+        foreach (var hb in hitboxes)
+        {
+            var hbCollider = hb.GetComponent<Collider>();
+            hitboxColliders.Add(hbCollider);
+            rdColliderList.Remove(hbCollider);
+        }
+        var aimingPlane = transform.Find("AimingPlane").GetComponent<Collider>();
+        rdColliderList.Remove(aimingPlane);
+        ragdollColliders = rdColliderList.ToArray();
+
+        EnableRagdoll(false);
     }
 
     public void EnableRagdoll(bool shouldEnable)
     {
-        //if (hitboxCollider == null)
-        //    return;
-        //hitboxCollider.enabled = !shouldEnable;
-        //foreach (var collider in ragdollColliders)
-        //    collider.enabled = shouldEnable;
+        if (hitboxColliders.Count <= 0)
+            return;
+
+        foreach (var hbCollider in hitboxColliders)
+            hbCollider.enabled = !shouldEnable;
         
-        var rigidbody = GetComponent<Rigidbody>();
-        rigidbody.useGravity = !shouldEnable;
-        rigidbody.isKinematic = shouldEnable;
+        foreach (var collider in ragdollColliders)
+            collider.enabled = shouldEnable;
+
+        foreach (var rb in ragdollRigidbodies)
+        {
+            rb.useGravity = shouldEnable;
+            rb.isKinematic = !shouldEnable;
+        }
+
+        mainRigidbody.useGravity = !shouldEnable;
+        //mainRigidbody.isKinematic = shouldEnable;
         GetComponent<Animator>().enabled = !shouldEnable;
     }
 
@@ -62,12 +76,12 @@ public class PlayerDestructable : Destructable
     public override void Resurrect()
     {
         base.Resurrect();
-        EnableRagdoll(false);
     }
 
     [PunRPC]
     public void SetActive()
     {
+        EnableRagdoll(false);
         gameObject.SetActive(true);
     }
 
