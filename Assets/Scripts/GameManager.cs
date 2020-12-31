@@ -164,12 +164,12 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     private void SpawnPlayer()
     {
         player.transform.position = spawnPosition;
-        player.GetPhotonView().RPC("SetActive", RpcTarget.Others);
+        player.GetPhotonView().RPC(nameof(PlayerDestructable.SetActive), RpcTarget.All);
         lifepointSlider.value = lifepointSlider.maxValue;
         playerDestructable.Resurrect();
         playerMovement.enabled = true;
         playerShooting.enabled = true;
-        player.SetActive(true);
+        //player.SetActive(true);
         playerShooting.ReloadWeapon();
         isPlayerDead = false;
         //spawnText.enabled = false;
