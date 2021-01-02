@@ -120,7 +120,7 @@ public class Launcher : MonoBehaviourPunCallbacks
         {
             Debug.Log("We load the default level");
 
-            PhotonNetwork.LoadLevel(3);
+            PhotonNetwork.LoadLevel(4);
         }
     }
 
