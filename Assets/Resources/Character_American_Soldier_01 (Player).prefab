@@ -869,9 +869,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73922c47a22349047b933ce37247b38c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Speed: 6
+  m_Speed: 5
   aimingSlownessFactor: 0.6
-  sprintFactor: 1.5
+  sprintFactor: 1.3
   aimingAtShootableDirection: {x: 0, y: 0, z: 0}
   aimingAtShootable: 0
   IkTargetRight: {fileID: 0}
@@ -894,10 +894,10 @@ MonoBehaviour:
     type: 3}
   handHold: {fileID: 7004147583061156005}
   aimingPlane: {fileID: 211899156918901731}
-  inaccuracyAcceleration: 5
-  inaccuracyDeceleration: 0.75
+  inaccuracyAcceleration: 4
+  inaccuracyDeceleration: 1
   moveSpeedInaccuracyImpact: 3
-  inaccuracyShootImpact: 4
+  inaccuracyShootImpact: 3
 --- !u!114 &7125913363120022919
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -912,8 +912,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lifepoints: 100
   hitEffect: {fileID: 166404, guid: 78e1c8c5b281b8b439229473779ac9aa, type: 3}
-  ragdollActive: 0
-  ragdollInactive: 0
 --- !u!114 &6883952479034378442
 MonoBehaviour:
   m_ObjectHideFlags: 0
