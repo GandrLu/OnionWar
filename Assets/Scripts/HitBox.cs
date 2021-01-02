@@ -5,10 +5,8 @@ using Photon.Pun;
 
 public class HitBox : MonoBehaviour
 {
-    [SerializeField] string damagingTag = "Damaging";
     [SerializeField] float defaultDamage;
     private Destructable associatedDestructable;
-    private bool isHit;
 
     void Awake()
     {
@@ -23,7 +21,7 @@ public class HitBox : MonoBehaviour
 
     public void Hit(Vector3 position, Quaternion rotation)
     {
-        associatedDestructable.PhotonView.RPC("InflictDamage", RpcTarget.All, defaultDamage);
+        associatedDestructable.PhotonView.RPC(nameof(associatedDestructable.InflictDamage), RpcTarget.All, defaultDamage);
         if (associatedDestructable.HitEffect != null)
             associatedDestructable.PhotonView.RPC("PlayHitEffect", RpcTarget.All, new object[2] { position, rotation });
     }

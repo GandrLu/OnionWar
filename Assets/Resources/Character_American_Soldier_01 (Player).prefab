@@ -2851,8 +2851,8 @@ GameObject:
   - component: {fileID: 5837791314369638661}
   - component: {fileID: 1641446714382794188}
   - component: {fileID: 5827137843580779184}
-  m_Layer: 0
-  m_Name: FootHitBox
+  m_Layer: 13
+  m_Name: MovementCollider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2884,8 +2884,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c42e220ebbd1cb242ba4d44bc7461947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damagingTag: Damaging
-  defaultDamage: 10
+  defaultDamage: 0
 --- !u!136 &5827137843580779184
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -2896,10 +2895,10 @@ CapsuleCollider:
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  m_Radius: 0.2
-  m_Height: 0.5
+  m_Radius: 0.3
+  m_Height: 1.8
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 0.67, z: 0}
 --- !u!1 &8547965301008970579
 GameObject:
   m_ObjectHideFlags: 0
@@ -2940,8 +2939,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1709091940235562553}
   - component: {fileID: 8099507046334997046}
-  - component: {fileID: 9042719628126662919}
-  m_Layer: 0
+  - component: {fileID: 5297833415146291068}
+  m_Layer: 14
   m_Name: BodyHitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2976,7 +2975,7 @@ CapsuleCollider:
   m_Height: 0.8
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &9042719628126662919
+--- !u!114 &5297833415146291068
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2988,8 +2987,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c42e220ebbd1cb242ba4d44bc7461947, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damagingTag: Damaging
-  defaultDamage: 50
+  defaultDamage: 60
 --- !u!1 &9107505994711919350
 GameObject:
   m_ObjectHideFlags: 0
@@ -2999,9 +2997,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2381047380892764229}
-  - component: {fileID: 961221809602148201}
   - component: {fileID: 1559914059613557767}
-  m_Layer: 0
+  - component: {fileID: 6454381168412399428}
+  m_Layer: 14
   m_Name: HeadHitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3022,20 +3020,6 @@ Transform:
   m_Father: {fileID: 207340582658322627}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &961221809602148201
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9107505994711919350}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c42e220ebbd1cb242ba4d44bc7461947, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  damagingTag: Damaging
-  defaultDamage: 100
 --- !u!135 &1559914059613557767
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -3049,6 +3033,19 @@ SphereCollider:
   serializedVersion: 2
   m_Radius: 0.14
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6454381168412399428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9107505994711919350}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c42e220ebbd1cb242ba4d44bc7461947, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultDamage: 100
 --- !u!1001 &5105333236654756618
 PrefabInstance:
   m_ObjectHideFlags: 0

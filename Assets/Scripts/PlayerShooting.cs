@@ -33,7 +33,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
     private void Awake()
     {
-        shootableMask = LayerMask.GetMask("Default");
+        shootableMask = LayerMask.GetMask(new string[] { "Default", "HitBox" });
         anim = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
         playerMovement = GetComponent<PlayerMovement>();
