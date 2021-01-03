@@ -84,6 +84,13 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             Shoot();
     }
 
+    public override void OnDisable()
+    {
+        base.OnDisable();
+        if (aimingLine != null)
+            aimingLine.enabled = false;
+    }
+
     private void HandleInaccuracy()
     {
         playerMoveSpeed = playerMovement.Speed * moveSpeedInaccuracyImpact;
