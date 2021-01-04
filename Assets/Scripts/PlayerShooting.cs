@@ -158,6 +158,8 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             var shotDirection = transform.forward + new Vector3(x, y, 0);
             //Debug.DrawRay(shotPosition, shotDirection * 20, Color.blue, 60);
             Ray shotRay = new Ray(shotPosition, shotDirection);
+            PhotonNetwork.Instantiate("ProjectileTrail", shotPosition, Quaternion.LookRotation(shotDirection));
+
             // Perform the raycast and if it hits something on the shootable layer...
             if (Physics.Raycast(shotRay, out shootableHit, camRayLength, shootableMask))
             {
@@ -171,6 +173,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             var shotDirection = shootableHit.point - shotPosition + new Vector3(x, y, 0);
             //Debug.DrawRay(shotPosition, shotDirection * 10, Color.cyan, 60);
             Ray shotRay = new Ray(shotPosition, shotDirection);
+            PhotonNetwork.Instantiate("ProjectileTrail", shotPosition, Quaternion.LookRotation(shotDirection));
 
             RaycastHit directShotHit;
             if (Physics.Raycast(shotRay, out directShotHit, camRayLength, shootableMask))
