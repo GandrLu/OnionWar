@@ -8,9 +8,13 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] GameObject weaponPrefab;
     [SerializeField] Transform handHold;
     [SerializeField] Transform aimingPlane;
+    [Tooltip("Defines how fast the movement inaccuracy increases.")]
     [SerializeField] float inaccuracyAcceleration = 2f;
+    [Tooltip("Defines how fast the movement inaccuracy decreases.")]
     [SerializeField] float inaccuracyDeceleration = 0.75f;
+    [Tooltip("Defines how much the movement speed influences the movement inaccuracy.")]
     [SerializeField] float moveSpeedInaccuracyImpact = 3f;
+    [Tooltip("Defines how much the weapons and the movement inaccuracy affect a shot.")]
     [SerializeField] float inaccuracyShootImpact = 5f;
 
     private Animator anim;
@@ -28,7 +32,6 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     private float currentInaccuracy;
     private float timeToReload = 0.7f;        // The time between each shot.
     private float reloadCooldownTimer, shotCooldownTimer;
-    private float playerMoveSpeed;
     private Vector3 shotPosition;
 
     private void Awake()
@@ -93,20 +96,20 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
     private void HandleInaccuracy()
     {
-        playerMoveSpeed = playerMovement.Speed * moveSpeedInaccuracyImpact;
+        var movementInaccuracy = playerMovement.Speed * moveSpeedInaccuracyImpact;
 
         // Inaccuracy is increasing
-        if (playerMoveSpeed > currentInaccuracy)
+        if (movementInaccuracy > currentInaccuracy)
             currentInaccuracy =
-                Mathf.Lerp(currentInaccuracy, playerMoveSpeed, inaccuracyAcceleration * Time.deltaTime);
+                Mathf.Lerp(currentInaccuracy, movementInaccuracy, inaccuracyAcceleration * Time.deltaTime);
         // Inaccuracy is decreasing
         else
             currentInaccuracy =
-                Mathf.Lerp(currentInaccuracy, playerMoveSpeed, inaccuracyDeceleration * Time.deltaTime);
+                Mathf.Lerp(currentInaccuracy, movementInaccuracy, inaccuracyDeceleration * Time.deltaTime);
 
         if (currentInaccuracy < 0.00001f)
             currentInaccuracy = 0f;
-        CursorManager.Instance.ResizeCrosshair(currentInaccuracy);
+        CursorManager.Instance.ResizeCrosshair(currentInaccuracy + weaponInHands.Accuracy);
     }
 
     private void ShotCooldown()
@@ -143,10 +146,11 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     private void Shoot()
     {
         // Inaccuracy
+        var combinedInaccuracy = weaponInHands.Accuracy + currentInaccuracy;
         var x = inaccuracyShootImpact *
-            Random.Range(-weaponInHands.Accuracy - currentInaccuracy, weaponInHands.Accuracy + currentInaccuracy);
+            Random.Range(-combinedInaccuracy, combinedInaccuracy);
         var y = inaccuracyShootImpact *
-            Random.Range(-weaponInHands.Accuracy - currentInaccuracy, weaponInHands.Accuracy + currentInaccuracy);
+            Random.Range(-combinedInaccuracy, combinedInaccuracy);
 
         ResetShotCooldown();
         photonView.RPC(nameof(PlayShotEffects), RpcTarget.All);

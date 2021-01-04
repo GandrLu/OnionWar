@@ -183,7 +183,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         {
             var absoluteMovement = new Vector3(horizontal, 0, vertical).normalized;
             absoluteMovement *= Time.fixedDeltaTime * m_Speed * aimingSlownessFactor;
-            speed = absoluteMovement.sqrMagnitude;
+            Speed = absoluteMovement.sqrMagnitude;
 
             var angle = Vector3.SignedAngle(Vector3.forward, transform.forward, Vector3.up);
             Vector3 alignedMovement = Quaternion.Euler(0, angle, 0) * absoluteMovement;
@@ -194,7 +194,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         {
             movement = new Vector3(h, 0, v).normalized;
             movement *= Time.fixedDeltaTime * m_Speed * aimingSlownessFactor;
-            speed = movement.sqrMagnitude;
+            Speed = movement.sqrMagnitude;
 
             var alignedMovement = Quaternion.Euler(0, cameraRotation.y, 0) * movement;
             playerRigidbody.MovePosition(playerRigidbody.position + alignedMovement);
@@ -211,7 +211,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
                 //horizontal *= sprintFactor;
             }
             movement = transform.forward * vertical * m_Speed * Time.fixedDeltaTime;
-            speed = movement.sqrMagnitude;
+            Speed = movement.sqrMagnitude;
 
             playerRigidbody.MovePosition(playerRigidbody.position + movement);
         }
@@ -223,7 +223,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
             {
                 movement *= sprintFactor;
             }
-            speed = movement.sqrMagnitude;
+            Speed = movement.sqrMagnitude;
 
             var alignedMovement = Quaternion.Euler(0, cameraRotation.y, 0) * movement;
             playerRigidbody.MovePosition(playerRigidbody.position + alignedMovement);

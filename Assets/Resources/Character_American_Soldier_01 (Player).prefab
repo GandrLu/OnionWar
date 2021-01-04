@@ -897,7 +897,7 @@ MonoBehaviour:
   inaccuracyAcceleration: 4
   inaccuracyDeceleration: 1
   moveSpeedInaccuracyImpact: 3
-  inaccuracyShootImpact: 3
+  inaccuracyShootImpact: 2
 --- !u!114 &7125913363120022919
 MonoBehaviour:
   m_ObjectHideFlags: 0
