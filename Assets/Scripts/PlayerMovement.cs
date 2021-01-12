@@ -112,19 +112,13 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
 
     void Turning(bool aiming)
     {
-        if (aiming || controlScheme == ControlScheme.bodyDirect)
+        if (aiming)
         {
             // Create a ray from the mouse cursor on screen in the direction of the camera.
             Ray camRay = mainCamera.ScreenPointToRay(Input.mousePosition);
-            Vector3 worldPoint = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-            Vector3 lookDirection = worldPoint - playerRigidbody.position;
-            float angle = Mathf.Atan2(lookDirection.y, lookDirection.x) * Mathf.Rad2Deg - 90f;
-
-            // Create a RaycastHit variable to store information about what was hit by the ray.
-            RaycastHit floorHit;
 
             // Perform the raycast and if it hits something on the floor layer...
-            if (Physics.Raycast(camRay, out floorHit, camRayLength, aimingPlaneMask))
+            if (Physics.Raycast(camRay, out RaycastHit floorHit, camRayLength, aimingPlaneMask))
             {
                 // Create a vector from the player to the point on the floor the raycast from the mouse hit.
                 Vector3 playerToMouse = floorHit.point - transform.position;
@@ -139,19 +133,30 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
                 playerRigidbody.MoveRotation(newRotation);
             }
         }
-        // Mousewheel
-        else if (Input.GetButton("Fire3"))
+        else if (controlScheme == ControlScheme.bodyDirect)
         {
-            Debug.Log(Input.mousePosition);
-            if (Input.mousePosition.x < m_ScreenWidth / 2 - 10)
+            // Create a ray from the mouse cursor on screen in the direction of the camera.
+            Ray camRay = mainCamera.ScreenPointToRay(Input.mousePosition);
+
+            // Perform the raycast and if it hits something on the floor layer...
+            if (Physics.Raycast(camRay, out RaycastHit floorHit, camRayLength, aimingPlaneMask))
             {
-                this.transform.Rotate(Vector3.up, -5f);
-                Debug.Log("rotate+");
-            }
-            else if (Input.mousePosition.x > m_ScreenWidth / 2 + 10)
-            {
-                this.transform.Rotate(Vector3.up, 5f);
-                Debug.Log("rotate-");
+                // Create a vector from the player to the point on the floor the raycast from the mouse hit.
+                Vector3 playerToMouse = floorHit.point - transform.position;
+
+                // Ensure the vector is entirely along the floor plane.
+                playerToMouse.y = 0f;
+                playerToMouse.Normalize();
+
+                // Set the player's rotation to this new rotation.
+                Vector3 alignedRotate;
+                if (h != 0 || v != 0)
+                    alignedRotate = Quaternion.LookRotation(playerToMouse) * new Vector3(h, 0, v).normalized;
+                else
+                    alignedRotate = Quaternion.LookRotation(playerToMouse) * Vector3.forward;
+                
+                if (alignedRotate != Vector3.zero)
+                    transform.forward = alignedRotate;
             }
         }
         else if (controlScheme == ControlScheme.screenAligned)
@@ -205,12 +210,13 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (controlScheme == ControlScheme.bodyDirect)
         {
+            movement = transform.forward * Mathf.Abs(vertical) + transform.forward * Mathf.Abs(horizontal);
+            movement.Normalize();
+            movement *= m_Speed * Time.fixedDeltaTime;
             if (m_IsSprinting)
             {
-                vertical *= sprintFactor;
-                //horizontal *= sprintFactor;
+                movement *= sprintFactor;
             }
-            movement = transform.forward * vertical * m_Speed * Time.fixedDeltaTime;
             Speed = movement.sqrMagnitude;
 
             playerRigidbody.MovePosition(playerRigidbody.position + movement);
@@ -231,9 +237,6 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     }
     private bool IsWalking(float h, float v)
     {
-        if (controlScheme == ControlScheme.bodyDirect)
-            return v != 0f;
-        else
             return v != 0f || h != 0f;
     }
 }
