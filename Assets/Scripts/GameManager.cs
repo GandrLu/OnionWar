@@ -18,6 +18,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     [SerializeField] Text ammoText;
     [SerializeField] int notShootableLayer;
     [SerializeField] Text spawnText;
+    [SerializeField] Image hitImage;
+    [SerializeField] Color hitColor;
     #endregion
 
     #region Private Fields
@@ -28,11 +30,13 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     private PlayerShooting playerShooting;
     private Vector3 spawnPosition;
     private float mapImageScaleFactor = 5.5f;
+    private float hitFlashSpeed = 3f;
     private float spawnTimer;
     private float spawnTime = 5f;
     private int cancelKeyHits;
     private bool isSpawnReady;
     private bool isPlayerDead;
+    private bool isHit;
     #endregion
 
     public Text AmmoText { get => ammoText; set => ammoText = value; }
@@ -100,6 +104,16 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
             if (++cancelKeyHits >= 2)
                 LeaveRoom();
         }
+
+        if (isHit)
+        {
+            hitImage.color = hitColor;
+        }
+        else
+        {
+            hitImage.color = Color.Lerp(hitImage.color, Color.clear, hitFlashSpeed * Time.deltaTime);
+        }
+        isHit = false;
     }
     #endregion
 
@@ -137,6 +151,11 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         spawnTimer += spawnTime;
         spawnText.enabled = true;
     }
+
+    public void TakeHit()
+    {
+        isHit = true;
+    }
     #endregion
 
     #region Private Methods
@@ -153,6 +172,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
                 hitbox.gameObject.layer = notShootableLayer;
             playerDestructable = player.GetComponent<PlayerDestructable>();
             playerDestructable.DamageEvent.AddListener(UpdateHudLifepoints);
+            playerDestructable.DamageEvent.AddListener(TakeHit);
             playerMovement = player.GetComponent<PlayerMovement>();
             playerShooting = player.GetComponent<PlayerShooting>();
         }
