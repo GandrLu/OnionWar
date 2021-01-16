@@ -9,23 +9,25 @@ public enum PersonalWeaponType
 
 public class PersonalWeapon : MonoBehaviour
 {
-    // Position fields
-    [SerializeField] Vector3 aimingPosition;
-    [SerializeField] Vector3 aimingRotation;
-    [SerializeField] Vector3 holdingPosition;
-    [SerializeField] Vector3 holdingRotation;
-
+    #region Serialized Fields
+    [SerializeField] Transform refLeft;
+    [SerializeField] Transform refRight;
     [SerializeField] PersonalWeaponType weaponType;
     [SerializeField] float accuracy;
     [SerializeField] float reloadTime;
     [SerializeField] float recoil;
     [SerializeField] float timeBetweenShots;
     [SerializeField] int bulletChamberSize;
-    private int loadedBullets;
-    private LineRenderer aimingLine;
-    private ParticleSystem muzzleFlash;
-    private Transform shootingPosition;
+    #endregion
 
+    #region Private Fields
+    private ParticleSystem muzzleFlash;
+    private LineRenderer aimingLine;
+    private Transform shootingPosition;
+    private int loadedBullets;
+    #endregion
+
+    #region Properties
     public LineRenderer AimingLine { get => aimingLine; set => aimingLine = value; }
     public ParticleSystem MuzzleFlash { get => muzzleFlash; set => muzzleFlash = value; }
     public Transform ShootingPosition { get => shootingPosition; set => shootingPosition = value; }
@@ -36,6 +38,9 @@ public class PersonalWeapon : MonoBehaviour
     public float ReloadTime { get => reloadTime; set => reloadTime = value; }
     public float Accuracy { get => accuracy; set => accuracy = value; }
     public float Recoil { get => recoil; set => recoil = value; }
+    public Transform RefLeft { get => refLeft; set => refLeft = value; }
+    public Transform RefRight { get => refRight; set => refRight = value; }
+    #endregion
 
     #region Unity Callbacks
     private void Awake()
@@ -49,25 +54,5 @@ public class PersonalWeapon : MonoBehaviour
         ShootingPosition = AimingLine.transform;
         LoadedBullets = BulletChamberSize;
     }
-
-    private void Start()
-    {
-    }
-
-    private void Update()
-    {
-    }
     #endregion
-
-    public void SetHoldingTransform()
-    {
-        transform.localPosition = holdingPosition;
-        transform.localRotation = Quaternion.Euler(holdingRotation);
-    }
-    
-    public void SetAimingTransform()
-    {
-        transform.localPosition = aimingPosition;
-        transform.localRotation = Quaternion.Euler(aimingRotation);
-    }
 }

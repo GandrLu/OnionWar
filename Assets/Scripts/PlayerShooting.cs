@@ -2,12 +2,21 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 
 public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 {
+    #region Serialized Fields
     [SerializeField] GameObject weaponPrefab;
-    [SerializeField] Transform handHold;
+    [SerializeField] Transform rig;
     [SerializeField] Transform aimingPlane;
+    [SerializeField] Transform aimHold;
+
+    [SerializeField] MultiParentConstraint weaponParentConstraint;
+    [SerializeField] MultiAimConstraint headAimConstraint;
+    [SerializeField] TwoBoneIKConstraint leftArmTwoBoneConstraint;
+    [SerializeField] TwoBoneIKConstraint rightArmTwoBoneConstraint;
+
     [Tooltip("Defines how fast the movement inaccuracy increases.")]
     [SerializeField] float inaccuracyAcceleration = 2f;
     [Tooltip("Defines how fast the movement inaccuracy decreases.")]
@@ -16,7 +25,9 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] float moveSpeedInaccuracyImpact = 3f;
     [Tooltip("Defines how much the weapons and the movement inaccuracy affect a shot.")]
     [SerializeField] float inaccuracyShootImpact = 5f;
+    #endregion
 
+    #region Private Fields
     private Animator anim;
     private AudioSource audioSource;
     private PlayerMovement playerMovement;
@@ -25,6 +36,11 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     private ParticleSystem muzzleFlashParticles;
     // RaycastHit variable to store information about what was hit by the aiming ray.
     private RaycastHit shootableHit;
+
+    private RigBuilder rigBuilder;
+    private MultiParentConstraint leftHandParentConstraint;
+    private MultiParentConstraint rightHandParentConstraint;
+
     private bool isAiming, isReloading, isReadyToFire;
     private int shootableMask;
     private float aimingDistance = 30f;
@@ -33,13 +49,18 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     private float timeToReload = 0.7f;        // The time between each shot.
     private float reloadCooldownTimer, shotCooldownTimer;
     private Vector3 shotPosition;
+    #endregion
 
+    #region Unity Callbacks
     private void Awake()
     {
         shootableMask = LayerMask.GetMask(new string[] { "Default", "HitBox" });
         anim = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
         playerMovement = GetComponent<PlayerMovement>();
+        rigBuilder = GetComponent<RigBuilder>();
+        leftHandParentConstraint = leftArmTwoBoneConstraint.GetComponentInChildren<MultiParentConstraint>();
+        rightHandParentConstraint = rightArmTwoBoneConstraint.GetComponentInChildren<MultiParentConstraint>();
     }
 
     private void Start()
@@ -80,7 +101,12 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         {
             shotPosition = weaponInHands.ShootingPosition.position;
             Aim();
+            photonView.RPC(nameof(SetWeaponParentConstraintAim), RpcTarget.All);
         }
+        else
+            photonView.RPC(nameof(SetWeaponParentConstraintHold), RpcTarget.All);
+        
+        SetArmAndHeadConstraint(isAiming);
 
         // Shooting
         if (Input.GetButtonDown("Fire1") && isAiming && isReadyToFire && !isReloading)
@@ -93,7 +119,73 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         if (aimingLine != null)
             aimingLine.enabled = false;
     }
+    #endregion
 
+    #region Public Methods
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            stream.SendNext(isAiming);
+        }
+        else
+        {
+            bool aiming = (bool)stream.ReceiveNext();
+            SetAimingAnimation(aiming);
+        }
+    }
+
+    public void ChangeWeapon(GameObject weapon)
+    {
+        GameObject weaponObj = Instantiate(weapon, rig);
+        weaponInHands = weaponObj.GetComponent<PersonalWeapon>();
+        SetupWeaponRigConstraint();
+        
+        muzzleFlashParticles = weaponInHands.MuzzleFlash;
+        aimingLine = weaponInHands.AimingLine;
+        aimingPlane.localPosition = new Vector3(0, weaponInHands.transform.position.y, 0);
+    }
+
+    public void ReloadWeapon()
+    {
+        if (weaponInHands == null)
+            return;
+        isReloading = false;
+        weaponInHands.LoadedBullets = weaponInHands.BulletChamberSize;
+        GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
+        reloadCooldownTimer = 0;
+        shotCooldownTimer = 0;
+    }
+    #endregion
+
+    #region PunRPCs
+    [PunRPC]
+    public void PlayShotEffects()
+    {
+        muzzleFlashParticles.Play();
+        audioSource.PlayOneShot(audioSource.clip);
+    }
+
+    [PunRPC]
+    public void SetWeaponParentConstraintAim()
+    {
+        var sources = weaponParentConstraint.data.sourceObjects;
+        sources.SetWeight(0, 0f);
+        sources.SetWeight(1, 1f);
+        weaponParentConstraint.data.sourceObjects = sources;
+    }
+
+    [PunRPC]
+    public void SetWeaponParentConstraintHold()
+    {
+        var sources = weaponParentConstraint.data.sourceObjects;
+        sources.SetWeight(0, 1f);
+        sources.SetWeight(1, 0f);
+        weaponParentConstraint.data.sourceObjects = sources;
+    }
+    #endregion
+
+    #region Private Methods
     private void HandleInaccuracy()
     {
         var movementInaccuracy = playerMovement.Speed * moveSpeedInaccuracyImpact;
@@ -194,7 +286,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         aimingLine.SetPosition(0, shotPosition);
         // Create a ray from the mouse cursor on screen in the direction of the camera.
         Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-
+        Vector3 shotTarget = new Vector3();
         // Perform the raycast and if it hits something on the shootable layer...
         if (Physics.Raycast(camRay, out shootableHit, camRayLength, shootableMask))
         {
@@ -202,25 +294,14 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             //Debug.Log("Pos " + playerToMouse);
             //Debug.Log("ScreenRay " + shootableHit.point);
             aimingLine.SetPosition(1, shootableHit.point);
+            shotTarget = shootableHit.point;
         }
         else
         {
             aimingLine.SetPosition(1, shotPosition + transform.forward * aimingDistance);
+            shotTarget = shotPosition + transform.forward * aimingDistance;
         }
-    }
-
-    private void SetAimingAnimation(bool aiming)
-    {
-        if (weaponInHands == null)
-            return;
-
-        if (aiming)
-            weaponInHands.SetAimingTransform();
-        else
-            weaponInHands.SetHoldingTransform();
-
-        string parameterName = "hand" + weaponInHands.WeaponType.ToString();
-        anim.SetBool(parameterName, aiming);
+        aimHold.forward = shotTarget - shotPosition;
     }
 
     private void ReduceBullets()
@@ -229,44 +310,42 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
     }
 
-    [PunRPC]
-    public void PlayShotEffects()
-    {
-        muzzleFlashParticles.Play();
-        audioSource.PlayOneShot(audioSource.clip);
-    }
-
-    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-    {
-        if (stream.IsWriting)
-        {
-            stream.SendNext(isAiming);
-        }
-        else
-        {
-            bool aiming = (bool)stream.ReceiveNext();
-            SetAimingAnimation(aiming);
-        }
-    }
-
-    public void ChangeWeapon(GameObject weapon)
-    {
-        GameObject weaponObj = Instantiate(weapon, handHold, false);
-        weaponInHands = weaponObj.GetComponent<PersonalWeapon>();
-        muzzleFlashParticles = weaponInHands.MuzzleFlash;
-        aimingLine = weaponInHands.AimingLine;
-        weaponInHands.SetHoldingTransform();
-        aimingPlane.localPosition = new Vector3(0, weaponInHands.transform.position.y, 0);
-    }
-
-    public void ReloadWeapon()
+    private void SetAimingAnimation(bool aiming)
     {
         if (weaponInHands == null)
             return;
-        isReloading = false;
-        weaponInHands.LoadedBullets = weaponInHands.BulletChamberSize;
-        GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
-        reloadCooldownTimer = 0;
-        shotCooldownTimer = 0;
+
+        string parameterName = "hand" + weaponInHands.WeaponType.ToString();
+        anim.SetBool(parameterName, aiming);
     }
+
+    private void SetArmAndHeadConstraint(bool shouldSetToAim)
+    {
+        if (shouldSetToAim)
+        {
+            leftArmTwoBoneConstraint.weight = 1f;
+            rightArmTwoBoneConstraint.weight = 1f;
+            headAimConstraint.weight = 0.7f;
+        }
+        else
+        {
+            leftArmTwoBoneConstraint.weight = 0f;
+            rightArmTwoBoneConstraint.weight = 0f;
+            headAimConstraint.weight = 0f;
+        }
+    }
+
+    private void SetupWeaponRigConstraint()
+    {
+        weaponParentConstraint.data.constrainedObject = weaponInHands.transform;
+        var sourceL = new WeightedTransformArray(0);
+        var sourceR = new WeightedTransformArray(0);
+        sourceL.Add(new WeightedTransform(weaponInHands.RefLeft, 1f));
+        sourceR.Add(new WeightedTransform(weaponInHands.RefRight, 1f));
+        leftHandParentConstraint.data.sourceObjects = sourceL;
+        rightHandParentConstraint.data.sourceObjects = sourceR;
+        rigBuilder.Build();
+        anim.Rebind();
+    }
+    #endregion
 }
