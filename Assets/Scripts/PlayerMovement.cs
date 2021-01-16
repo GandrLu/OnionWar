@@ -79,9 +79,9 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         cameraRotation = mainCamera.transform.rotation.eulerAngles;
 
         // Change control scheme with 1 and 2 on alphabetical keyboard
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        if (Input.GetButton("MovementDirectScheme"))
             controlScheme = ControlScheme.bodyDirect;
-        else if (Input.GetKeyDown(KeyCode.Alpha2))
+        else if (Input.GetButton("MovementScreenScheme"))
             controlScheme = ControlScheme.screenAligned;
     }
 
