@@ -88,7 +88,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5420744504510230514}
-  - component: {fileID: 2051381163078756911}
   m_Layer: 0
   m_Name: RefLeft
   m_TagString: Untagged
@@ -103,25 +102,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1325180091538635503}
-  m_LocalRotation: {x: -0.4529267, y: 0.51125187, z: 0.6313812, w: 0.3672012}
-  m_LocalPosition: {x: -0.071, y: -0.04, z: 0.123}
+  m_LocalRotation: {x: 0.25433192, y: 0.055469807, z: 0.742006, w: 0.6177909}
+  m_LocalPosition: {x: -0.076, y: -0.053, z: 0.161}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 9173117440829846404}
   m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: -78.02, y: 288.819, z: -180.157}
---- !u!114 &2051381163078756911
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1325180091538635503}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48948dfe9d76b07488dacd46a7955fa1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_LocalEulerAnglesHint: {x: 13.411, y: 387.288, z: -256.292}
 --- !u!1 &1731132093488259688
 GameObject:
   m_ObjectHideFlags: 0
@@ -260,7 +247,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7521920441428720316}
-  - component: {fileID: 6095212041757730698}
   m_Layer: 0
   m_Name: RefRight
   m_TagString: Untagged
@@ -275,25 +261,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8392625723583725734}
-  m_LocalRotation: {x: 0.63237154, y: -0.33926287, z: 0.4066102, w: 0.5653983}
-  m_LocalPosition: {x: 0.006, y: -0.031, z: 0.081}
+  m_LocalRotation: {x: 0.0679489, y: -0.013602613, z: -0.7774719, w: 0.62508833}
+  m_LocalPosition: {x: 0.05, y: 0.009, z: 0.134}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 9173117440829846404}
   m_RootOrder: 5
-  m_LocalEulerAnglesHint: {x: 97.701996, y: -77.070984, z: -13.247986}
---- !u!114 &6095212041757730698
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8392625723583725734}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48948dfe9d76b07488dacd46a7955fa1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_LocalEulerAnglesHint: {x: 176.342, y: -187.06, z: -282.627}
 --- !u!1 &9170804269009093442
 GameObject:
   m_ObjectHideFlags: 0
@@ -303,7 +277,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9173117440829846404}
-  - component: {fileID: 3643861125106840651}
   - component: {fileID: 639978911045696871}
   m_Layer: 0
   m_Name: SM_Wep_American_Pistol_01
@@ -333,18 +306,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3643861125106840651
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9170804269009093442}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48948dfe9d76b07488dacd46a7955fa1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &639978911045696871
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -12,6 +12,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] float m_Speed = 6f;            // The speed that the player will move at.
     [SerializeField] float aimingSlownessFactor = 0.6f;
     [SerializeField] float sprintFactor = 1.5f;
+    [SerializeField] bool forceAiming;
     private Vector3 movement;                   // The vector to store the direction of the player's movement.
     private Vector3 cameraRotation;
     private Animator anim;                      // Reference to the animator component.
@@ -26,11 +27,6 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     private bool isAiming;
     public Vector3 aimingAtShootableDirection;
     public bool aimingAtShootable;
-    [SerializeField] Transform IkTargetRight;
-    [SerializeField] Transform IkTargetLeft;
-    [SerializeField] Transform Spine;
-    Vector3 oldPosition = Vector3.zero;
-    Quaternion oldRotation = Quaternion.identity;
     // 0 is move in body direction, 1 is move in screen direction
     [SerializeField] ControlScheme controlScheme;
     private Camera mainCamera;
@@ -74,7 +70,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         h = Input.GetAxisRaw("Horizontal");
         v = Input.GetAxisRaw("Vertical");
 
-        isAiming = Input.GetButton("Fire2");
+        isAiming = Input.GetButton("Fire2") || forceAiming;
         m_IsSprinting = Input.GetButton("Sprint");
         cameraRotation = mainCamera.transform.rotation.eulerAngles;
 

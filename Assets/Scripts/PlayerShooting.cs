@@ -2,20 +2,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Animations.Rigging;
 
 public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 {
     #region Serialized Fields
+    [SerializeField] bool forceAiming;
     [SerializeField] List<GameObject> weaponPrefabs;
-    [SerializeField] Transform rig;
     [SerializeField] Transform aimingPlane;
-    [SerializeField] Transform aimHold;
+    [SerializeField] Transform aimPosition;
+    [SerializeField] Transform backPosition;
+    [SerializeField] Transform holdPositionTwohanded;
+    [SerializeField] Transform holdPositionOnehanded;
 
-    [SerializeField] MultiParentConstraint weaponParentConstraint;
-    [SerializeField] MultiAimConstraint headAimConstraint;
-    [SerializeField] TwoBoneIKConstraint leftArmTwoBoneConstraint;
-    [SerializeField] TwoBoneIKConstraint rightArmTwoBoneConstraint;
+    [SerializeField] bool isIkActive;
+    [SerializeField] Transform IkTargetRight;
+    [SerializeField] Transform IkTargetLeft;
+    [SerializeField] Transform IkTargetHead;
 
     [Tooltip("Defines how fast the movement inaccuracy increases.")]
     [SerializeField] float inaccuracyAcceleration = 2f;
@@ -36,10 +38,6 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     private ParticleSystem muzzleFlashParticles;
     // RaycastHit variable to store information about what was hit by the aiming ray.
     private RaycastHit shootableHit;
-
-    private RigBuilder rigBuilder;
-    private MultiParentConstraint leftHandParentConstraint;
-    private MultiParentConstraint rightHandParentConstraint;
 
     private bool isAiming, isReloading, isReadyToFire;
     private int shootableMask;
@@ -67,10 +65,10 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         {
             isAiming = (bool)stream.ReceiveNext();
             if (weaponInHands != null)
-                SetRigConstraints(isAiming);
+                SetIKsToAiming(isAiming);
             aimHoldRotation = (Vector3)stream.ReceiveNext();
             if (isAiming)
-                aimHold.forward = aimHoldRotation;
+                aimPosition.forward = aimHoldRotation;
         }
     }
     #endregion
@@ -82,9 +80,6 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         anim = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
         playerMovement = GetComponent<PlayerMovement>();
-        rigBuilder = GetComponent<RigBuilder>();
-        leftHandParentConstraint = leftArmTwoBoneConstraint.GetComponentInChildren<MultiParentConstraint>();
-        rightHandParentConstraint = rightArmTwoBoneConstraint.GetComponentInChildren<MultiParentConstraint>();
     }
 
     private void Start()
@@ -132,17 +127,17 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             StartReload();
 
         // Aiming
-        isAiming = Input.GetButton("Fire2");
+        isAiming = Input.GetButton("Fire2") || forceAiming;
         aimingLine.enabled = isAiming && isReadyToFire && !isReloading;
 
         if (isAiming)
         {
             shotPosition = weaponInHands.ShootingPosition.position;
             Aim();
-            SetRigConstraints(true);
+            SetIKsToAiming(true);
         }
         else
-            SetRigConstraints(false);
+            SetIKsToAiming(false);
 
 
         // Shooting
@@ -155,6 +150,48 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         base.OnDisable();
         if (aimingLine != null)
             aimingLine.enabled = false;
+    }
+
+    void OnAnimatorIK()
+    {
+        if (anim)
+        {
+            //if the IK is active, set the position and rotation directly to the goal. 
+            if (isIkActive)
+            {
+                // Set the look target position, if one has been assigned
+                if (IkTargetHead != null)
+                {
+                    anim.SetLookAtWeight(1);
+                    anim.SetLookAtPosition(IkTargetHead.position);
+                }
+                // Set the right hand target position and rotation, if one has been assigned
+                if (IkTargetRight != null)
+                {
+                    anim.SetIKPositionWeight(AvatarIKGoal.RightHand, 1);
+                    anim.SetIKRotationWeight(AvatarIKGoal.RightHand, 1);
+                    anim.SetIKPosition(AvatarIKGoal.RightHand, IkTargetRight.position);
+                    anim.SetIKRotation(AvatarIKGoal.RightHand, IkTargetRight.rotation);
+                }
+                // Set the left hand target position and rotation, if one has been assigned
+                if (IkTargetLeft != null)
+                {
+                    anim.SetIKPositionWeight(AvatarIKGoal.LeftHand, 1);
+                    anim.SetIKRotationWeight(AvatarIKGoal.LeftHand, 1);
+                    anim.SetIKPosition(AvatarIKGoal.LeftHand, IkTargetLeft.position);
+                    anim.SetIKRotation(AvatarIKGoal.LeftHand, IkTargetLeft.rotation);
+                }
+            }
+            //if the IK is not active, set the position and rotation of the hand and head back to the original position
+            else
+            {
+                anim.SetIKPositionWeight(AvatarIKGoal.RightHand, 0);
+                anim.SetIKRotationWeight(AvatarIKGoal.RightHand, 0);
+                anim.SetIKPositionWeight(AvatarIKGoal.LeftHand, 0);
+                anim.SetIKRotationWeight(AvatarIKGoal.LeftHand, 0);
+                anim.SetLookAtWeight(0);
+            }
+        }
     }
     #endregion
 
@@ -188,19 +225,25 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             Destroy(weaponInHands.gameObject, 0.1f);
             weaponInHands.gameObject.SetActive(false);
         }
-        GameObject weaponObj = Instantiate(weaponPrefabs[weaponIndex], rig);
+        GameObject weaponObj = Instantiate(weaponPrefabs[weaponIndex], backPosition);
         weaponInHands = weaponObj.GetComponent<PersonalWeapon>();
-        SetupWeaponRigConstraint();
+        SetupIkTargets();
 
         muzzleFlashParticles = weaponInHands.MuzzleFlash;
         aimingLine = weaponInHands.AimingLine;
-        aimingPlane.localPosition = new Vector3(0, aimHold.transform.position.y, 0);
+        aimingPlane.localPosition = new Vector3(0, aimPosition.transform.position.y, 0);
         ActiveWeaponIndex = weaponIndex;
 
         if (weaponInHands.WeaponType == PersonalWeaponType.Rifle)
+        {
             anim.SetBool("hold" + PersonalWeaponType.Rifle.ToString(), true);
+            anim.SetBool("hold" + PersonalWeaponType.Pistol, false);
+        }
         else if (weaponInHands.WeaponType == PersonalWeaponType.Pistol)
+        {
             anim.SetBool("hold" + PersonalWeaponType.Pistol, true);
+            anim.SetBool("hold" + PersonalWeaponType.Rifle.ToString(), false);
+        }
     }
 
     [PunRPC]
@@ -246,42 +289,20 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         isReadyToFire = false;
     }
 
-    private void SetRigConstraints(bool shouldSetToAim)
+    private void SetIKsToAiming(bool shouldSetToAim)
     {
-        var sources = weaponParentConstraint.data.sourceObjects;
+        isIkActive = shouldSetToAim;
         if (shouldSetToAim)
         {
-            // Weapon
-            sources.SetWeight(0, 1f);
-            sources.SetWeight(2, 0f);
-            sources.SetWeight(3, 0f);
-            // Arms
-            leftArmTwoBoneConstraint.weight = 1f;
-            rightArmTwoBoneConstraint.weight = 1f;
-            // Head
-            headAimConstraint.weight = 0.7f;
+            weaponInHands.transform.SetParent(aimPosition, false);
         }
         else
         {
-            // Weapon
-            sources.SetWeight(0, 0f);
             if (weaponInHands.WeaponType == PersonalWeaponType.Rifle)
-            {
-                sources.SetWeight(2, 1f);
-                sources.SetWeight(3, 0f);
-            }
+                weaponInHands.transform.SetParent(holdPositionTwohanded, false);
             else if (weaponInHands.WeaponType == PersonalWeaponType.Pistol)
-            {
-                sources.SetWeight(2, 0f);
-                sources.SetWeight(3, 1f);
-            }
-            // Arms
-            leftArmTwoBoneConstraint.weight = 0f;
-            rightArmTwoBoneConstraint.weight = 0f;
-            // Head
-            headAimConstraint.weight = 0f;
+                weaponInHands.transform.SetParent(holdPositionOnehanded, false);
         }
-        weaponParentConstraint.data.sourceObjects = sources;
     }
 
     private void StartReload()
@@ -365,7 +386,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             aimingLine.SetPosition(1, shotPosition + transform.forward * aimingDistance);
             shotTarget = shotPosition + transform.forward * aimingDistance;
         }
-        aimHold.forward = shotTarget - shotPosition;
+        aimPosition.forward = shotTarget - shotPosition;
         aimHoldRotation = shotTarget - shotPosition;
     }
 
@@ -375,17 +396,11 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
     }
 
-    private void SetupWeaponRigConstraint()
+    private void SetupIkTargets()
     {
-        weaponParentConstraint.data.constrainedObject = weaponInHands.transform;
-        var sourceL = new WeightedTransformArray(0);
-        var sourceR = new WeightedTransformArray(0);
-        sourceL.Add(new WeightedTransform(weaponInHands.RefLeft, 1f));
-        sourceR.Add(new WeightedTransform(weaponInHands.RefRight, 1f));
-        leftHandParentConstraint.data.sourceObjects = sourceL;
-        rightHandParentConstraint.data.sourceObjects = sourceR;
-        rigBuilder.Build();
-        anim.Rebind();
+        IkTargetLeft = weaponInHands.RefLeft;
+        IkTargetRight = weaponInHands.RefRight;
+        IkTargetHead = weaponInHands.ShootingPosition;
     }
     #endregion
 }

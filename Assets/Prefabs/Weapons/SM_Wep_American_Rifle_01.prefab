@@ -298,7 +298,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4867603650760719810}
-  - component: {fileID: 4587514917187838364}
   m_Layer: 0
   m_Name: RefRight
   m_TagString: Untagged
@@ -313,25 +312,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4867603650760719811}
-  m_LocalRotation: {x: -0.04596712, y: -0.86969644, z: 0.10953589, w: 0.47907943}
-  m_LocalPosition: {x: 0.00016, y: -0.00092, z: -0.00079}
+  m_LocalRotation: {x: 0.08345156, y: 0.008635279, z: -0.774203, w: 0.6273525}
+  m_LocalPosition: {x: 0.000386, y: -0.000229, z: -0.001197}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 540353869589258321}
   m_RootOrder: 2
-  m_LocalEulerAnglesHint: {x: -351.577, y: -841.507, z: -349.227}
---- !u!114 &4587514917187838364
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4867603650760719811}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48948dfe9d76b07488dacd46a7955fa1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_LocalEulerAnglesHint: {x: -353.219, y: -1086.847, z: -102.369}
 --- !u!1 &4867603652354753555
 GameObject:
   m_ObjectHideFlags: 0
@@ -341,7 +328,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4867603652354753554}
-  - component: {fileID: 4587514915635251830}
   m_Layer: 0
   m_Name: RefLeft
   m_TagString: Untagged
@@ -356,25 +342,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4867603652354753555}
-  m_LocalRotation: {x: 0.026019556, y: -0.07930523, z: -0.9904784, w: -0.109481595}
-  m_LocalPosition: {x: -0.00088, y: 0.00009, z: 0.00283}
+  m_LocalRotation: {x: -0.3458855, y: 0.18439125, z: -0.7000604, w: -0.5968907}
+  m_LocalPosition: {x: -0.00067, y: 0.00036, z: 0.00219}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 540353869589258321}
   m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: -9.369, y: 358.015, z: 167.548}
---- !u!114 &4587514915635251830
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4867603652354753555}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48948dfe9d76b07488dacd46a7955fa1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_LocalEulerAnglesHint: {x: 42.151, y: 380.873, z: 107.217}
 --- !u!1 &8383571182186691662
 GameObject:
   m_ObjectHideFlags: 0
@@ -387,9 +361,8 @@ GameObject:
   - component: {fileID: 3163844929348345821}
   - component: {fileID: 2988115160063222907}
   - component: {fileID: 651739173502502664}
-  - component: {fileID: 4587514917064161804}
   m_Layer: 0
-  m_Name: SM_Wep_American_Rifle_01 1
+  m_Name: SM_Wep_American_Rifle_01
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -402,8 +375,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8383571182186691662}
-  m_LocalRotation: {x: 0.008170014, y: -0.2641121, z: 0.02554579, w: 0.9641191}
-  m_LocalPosition: {x: -0.03700003, y: 1.3465266, z: 0.21674824}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 100, y: 100, z: 100}
   m_Children:
   - {fileID: 9162138139342586383}
@@ -413,7 +386,7 @@ Transform:
   - {fileID: 4867603650513559784}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 1.6760001, y: -30.602001, z: 2.5770001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &3163844929348345821
 MeshFilter:
   m_ObjectHideFlags: 0
@@ -473,10 +446,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f2245242b71d08849a3026a0f845880d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  aimingPosition: {x: 9.9, y: 6.4, z: 5.8}
-  aimingRotation: {x: 900.176, y: -179.35, z: -179.616}
-  holdingPosition: {x: 12.6, y: -30.6, z: -1.7}
-  holdingRotation: {x: 703.893, y: -44.51, z: -0.447}
   refLeft: {fileID: 4867603652354753554}
   refRight: {fileID: 4867603650760719810}
   weaponType: 1
@@ -485,18 +454,6 @@ MonoBehaviour:
   recoil: 0.05
   timeBetweenShots: 0.7
   bulletChamberSize: 5
---- !u!114 &4587514917064161804
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8383571182186691662}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48948dfe9d76b07488dacd46a7955fa1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &49320472007782896
 PrefabInstance:
   m_ObjectHideFlags: 0
