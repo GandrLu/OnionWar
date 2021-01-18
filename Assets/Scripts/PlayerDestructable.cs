@@ -62,6 +62,7 @@ public class PlayerDestructable : Destructable
     public override void Destruct()
     {
         EnableRagdoll(true);
+        GetComponent<PlayerShooting>().ActivateWeaponInHands(false);
         if (PhotonView.IsMine)
         {
             Debug.Log("Killed " + PhotonView.Owner.NickName);
@@ -78,6 +79,7 @@ public class PlayerDestructable : Destructable
     public void SetActive()
     {
         EnableRagdoll(false);
+        GetComponent<PlayerShooting>().ActivateWeaponInHands(true);
         gameObject.SetActive(true);
     }
 

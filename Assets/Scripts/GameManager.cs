@@ -129,6 +129,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player other)
     {
         Debug.LogFormat("OnPlayerEnteredRoom() {0}", other.NickName);
+        // Equip correct weapon at joined players instance of this player
+        playerShooting.photonView.RPC(nameof(playerShooting.ChangeWeapon), other, playerShooting.ActiveWeaponIndex);
     }
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
@@ -165,7 +167,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         {
             Debug.LogFormat("We are Instantiating LocalPlayer from {0}", SceneManager.GetActiveScene().name);
             // we're in a room. spawn a character for the local player. it gets synced by using PhotonNetwork.Instantiate
-            player = PhotonNetwork.Instantiate(playerPrefab.name, new Vector3(0, -100, 0), Quaternion.identity, 0);
+            player = PhotonNetwork.Instantiate(playerPrefab.name, Vector3.zero, Quaternion.identity, 0);
             player.SetActive(false);
             // Set layer of own hitboxes to not shootable to avoid shooting yourself
             foreach (var hitbox in player.GetComponentsInChildren<HitBox>())

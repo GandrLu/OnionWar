@@ -7,7 +7,7 @@ using UnityEngine.Animations.Rigging;
 public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 {
     #region Serialized Fields
-    [SerializeField] GameObject weaponPrefab;
+    [SerializeField] List<GameObject> weaponPrefabs;
     [SerializeField] Transform rig;
     [SerializeField] Transform aimingPlane;
     [SerializeField] Transform aimHold;
@@ -43,12 +43,36 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
     private bool isAiming, isReloading, isReadyToFire;
     private int shootableMask;
+    private int activeWeaponIndex = 0;
     private float aimingDistance = 30f;
     private float camRayLength = 100f;
     private float currentInaccuracy;
     private float timeToReload = 0.7f;        // The time between each shot.
     private float reloadCooldownTimer, shotCooldownTimer;
     private Vector3 shotPosition;
+    private Vector3 aimHoldRotation;
+
+    public int ActiveWeaponIndex { get => activeWeaponIndex; set => activeWeaponIndex = value; }
+    #endregion
+
+    #region Photon Callbacks
+    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        if (stream.IsWriting)
+        {
+            stream.SendNext(isAiming);
+            stream.SendNext(aimHoldRotation);
+        }
+        else
+        {
+            isAiming = (bool)stream.ReceiveNext();
+            if (weaponInHands != null)
+                SetRigConstraints(isAiming);
+            aimHoldRotation = (Vector3)stream.ReceiveNext();
+            if (isAiming)
+                aimHold.forward = aimHoldRotation;
+        }
+    }
     #endregion
 
     #region Unity Callbacks
@@ -65,10 +89,14 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
     private void Start()
     {
-        // Initially equip weapon
-        ChangeWeapon(weaponPrefab);
+        // Initially equip weapon if it was not equipped over network and weapons are in the prefab list
+        if (weaponPrefabs.Count <= 0)
+            return;
+        if (weaponInHands == null)
+            ChangeWeapon(ActiveWeaponIndex);
         // Use in start to ensure weapon is loaded
-        GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
+        if (GameManager.Instance != null)
+            GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
     }
 
     private void Update()
@@ -85,6 +113,17 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         if (isReloading)
             ReloadCooldown();
 
+        if (Input.GetButtonDown("WeaponSlot1") && weaponPrefabs.Count > 0 && ActiveWeaponIndex != 0)
+        {
+            ChangeWeapon(0);
+            photonView.RPC(nameof(ChangeWeapon), RpcTarget.Others, 0);
+        }
+        if (Input.GetButtonDown("WeaponSlot2") && weaponPrefabs.Count > 1 && ActiveWeaponIndex != 1)
+        {
+            ChangeWeapon(1);
+            photonView.RPC(nameof(ChangeWeapon), RpcTarget.Others, 1);
+        }
+
         // Inaccuracy of shooting
         HandleInaccuracy();
 
@@ -95,18 +134,16 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         // Aiming
         isAiming = Input.GetButton("Fire2");
         aimingLine.enabled = isAiming && isReadyToFire && !isReloading;
-        SetAimingAnimation(isAiming);
 
         if (isAiming)
         {
             shotPosition = weaponInHands.ShootingPosition.position;
             Aim();
-            photonView.RPC(nameof(SetWeaponParentConstraintAim), RpcTarget.All);
+            SetRigConstraints(true);
         }
         else
-            photonView.RPC(nameof(SetWeaponParentConstraintHold), RpcTarget.All);
-        
-        SetArmAndHeadConstraint(isAiming);
+            SetRigConstraints(false);
+
 
         // Shooting
         if (Input.GetButtonDown("Fire1") && isAiming && isReadyToFire && !isReloading)
@@ -122,28 +159,10 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     #endregion
 
     #region Public Methods
-    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    public void ActivateWeaponInHands(bool isToActivate)
     {
-        if (stream.IsWriting)
-        {
-            stream.SendNext(isAiming);
-        }
-        else
-        {
-            bool aiming = (bool)stream.ReceiveNext();
-            SetAimingAnimation(aiming);
-        }
-    }
-
-    public void ChangeWeapon(GameObject weapon)
-    {
-        GameObject weaponObj = Instantiate(weapon, rig);
-        weaponInHands = weaponObj.GetComponent<PersonalWeapon>();
-        SetupWeaponRigConstraint();
-        
-        muzzleFlashParticles = weaponInHands.MuzzleFlash;
-        aimingLine = weaponInHands.AimingLine;
-        aimingPlane.localPosition = new Vector3(0, weaponInHands.transform.position.y, 0);
+        if (weaponInHands != null)
+            weaponInHands.gameObject.SetActive(isToActivate);
     }
 
     public void ReloadWeapon()
@@ -160,28 +179,35 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
     #region PunRPCs
     [PunRPC]
+    public void ChangeWeapon(int weaponIndex)
+    {
+        if (weaponIndex >= weaponPrefabs.Count || weaponIndex < 0)
+            return;
+        if (weaponInHands != null)
+        {
+            Destroy(weaponInHands.gameObject, 0.1f);
+            weaponInHands.gameObject.SetActive(false);
+        }
+        GameObject weaponObj = Instantiate(weaponPrefabs[weaponIndex], rig);
+        weaponInHands = weaponObj.GetComponent<PersonalWeapon>();
+        SetupWeaponRigConstraint();
+
+        muzzleFlashParticles = weaponInHands.MuzzleFlash;
+        aimingLine = weaponInHands.AimingLine;
+        aimingPlane.localPosition = new Vector3(0, aimHold.transform.position.y, 0);
+        ActiveWeaponIndex = weaponIndex;
+
+        if (weaponInHands.WeaponType == PersonalWeaponType.Rifle)
+            anim.SetBool("hold" + PersonalWeaponType.Rifle.ToString(), true);
+        else if (weaponInHands.WeaponType == PersonalWeaponType.Pistol)
+            anim.SetBool("hold" + PersonalWeaponType.Pistol, true);
+    }
+
+    [PunRPC]
     public void PlayShotEffects()
     {
         muzzleFlashParticles.Play();
         audioSource.PlayOneShot(audioSource.clip);
-    }
-
-    [PunRPC]
-    public void SetWeaponParentConstraintAim()
-    {
-        var sources = weaponParentConstraint.data.sourceObjects;
-        sources.SetWeight(0, 0f);
-        sources.SetWeight(1, 1f);
-        weaponParentConstraint.data.sourceObjects = sources;
-    }
-
-    [PunRPC]
-    public void SetWeaponParentConstraintHold()
-    {
-        var sources = weaponParentConstraint.data.sourceObjects;
-        sources.SetWeight(0, 1f);
-        sources.SetWeight(1, 0f);
-        weaponParentConstraint.data.sourceObjects = sources;
     }
     #endregion
 
@@ -218,6 +244,44 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     {
         shotCooldownTimer += weaponInHands.TimeBetweenShots;
         isReadyToFire = false;
+    }
+
+    private void SetRigConstraints(bool shouldSetToAim)
+    {
+        var sources = weaponParentConstraint.data.sourceObjects;
+        if (shouldSetToAim)
+        {
+            // Weapon
+            sources.SetWeight(0, 1f);
+            sources.SetWeight(2, 0f);
+            sources.SetWeight(3, 0f);
+            // Arms
+            leftArmTwoBoneConstraint.weight = 1f;
+            rightArmTwoBoneConstraint.weight = 1f;
+            // Head
+            headAimConstraint.weight = 0.7f;
+        }
+        else
+        {
+            // Weapon
+            sources.SetWeight(0, 0f);
+            if (weaponInHands.WeaponType == PersonalWeaponType.Rifle)
+            {
+                sources.SetWeight(2, 1f);
+                sources.SetWeight(3, 0f);
+            }
+            else if (weaponInHands.WeaponType == PersonalWeaponType.Pistol)
+            {
+                sources.SetWeight(2, 0f);
+                sources.SetWeight(3, 1f);
+            }
+            // Arms
+            leftArmTwoBoneConstraint.weight = 0f;
+            rightArmTwoBoneConstraint.weight = 0f;
+            // Head
+            headAimConstraint.weight = 0f;
+        }
+        weaponParentConstraint.data.sourceObjects = sources;
     }
 
     private void StartReload()
@@ -302,37 +366,13 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             shotTarget = shotPosition + transform.forward * aimingDistance;
         }
         aimHold.forward = shotTarget - shotPosition;
+        aimHoldRotation = shotTarget - shotPosition;
     }
 
     private void ReduceBullets()
     {
         --weaponInHands.LoadedBullets;
         GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
-    }
-
-    private void SetAimingAnimation(bool aiming)
-    {
-        if (weaponInHands == null)
-            return;
-
-        string parameterName = "hand" + weaponInHands.WeaponType.ToString();
-        anim.SetBool(parameterName, aiming);
-    }
-
-    private void SetArmAndHeadConstraint(bool shouldSetToAim)
-    {
-        if (shouldSetToAim)
-        {
-            leftArmTwoBoneConstraint.weight = 1f;
-            rightArmTwoBoneConstraint.weight = 1f;
-            headAimConstraint.weight = 0.7f;
-        }
-        else
-        {
-            leftArmTwoBoneConstraint.weight = 0f;
-            rightArmTwoBoneConstraint.weight = 0f;
-            headAimConstraint.weight = 0f;
-        }
     }
 
     private void SetupWeaponRigConstraint()
