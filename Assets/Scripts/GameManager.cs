@@ -16,6 +16,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     [SerializeField] GameObject hudCanvas;
     [SerializeField] Slider lifepointSlider;
     [SerializeField] Text ammoText;
+    [SerializeField] Image itemImage;
     [SerializeField] int notShootableLayer;
     [SerializeField] Text spawnText;
     [SerializeField] Image hitImage;
@@ -41,6 +42,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
 
     public Text AmmoText { get => ammoText; set => ammoText = value; }
     public static GameManager Instance { get => instance; }
+    public Image ItemImage { get => itemImage; set => itemImage = value; }
 
     #region Unity Callbacks
     private void Awake()

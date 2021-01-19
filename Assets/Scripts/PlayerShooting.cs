@@ -91,7 +91,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             ChangeWeapon(ActiveWeaponIndex);
         // Use in start to ensure weapon is loaded
         if (GameManager.Instance != null)
-            GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
+            UpdateHUDAmmoText();
     }
 
     private void Update()
@@ -208,7 +208,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             return;
         isReloading = false;
         weaponInHands.LoadedBullets = weaponInHands.BulletChamberSize;
-        GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
+        UpdateHUDAmmoText();
         reloadCooldownTimer = 0;
         shotCooldownTimer = 0;
     }
@@ -233,6 +233,8 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         aimingLine = weaponInHands.AimingLine;
         aimingPlane.localPosition = new Vector3(0, aimPosition.transform.position.y, 0);
         ActiveWeaponIndex = weaponIndex;
+        GameManager.Instance.ItemImage.sprite = weaponInHands.HudImage;
+        UpdateHUDAmmoText();
 
         if (weaponInHands.WeaponType == PersonalWeaponType.Rifle)
         {
@@ -393,6 +395,11 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     private void ReduceBullets()
     {
         --weaponInHands.LoadedBullets;
+        UpdateHUDAmmoText();
+    }
+
+    private void UpdateHUDAmmoText()
+    {
         GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
     }
 

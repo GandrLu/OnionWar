@@ -2839,8 +2839,11 @@ MonoBehaviour:
   hudCanvas: {fileID: 1744328308}
   lifepointSlider: {fileID: 7593546210391590657}
   ammoText: {fileID: 964577631}
-  spawnText: {fileID: 0}
+  itemImage: {fileID: 1473153808}
   notShootableLayer: 13
+  spawnText: {fileID: 0}
+  hitImage: {fileID: 0}
+  hitColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1001 &7863597210592454378
 PrefabInstance:
   m_ObjectHideFlags: 0

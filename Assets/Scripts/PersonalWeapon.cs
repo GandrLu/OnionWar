@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public enum PersonalWeaponType
 {
@@ -18,6 +19,7 @@ public class PersonalWeapon : MonoBehaviour
     [SerializeField] float recoil;
     [SerializeField] float timeBetweenShots;
     [SerializeField] int bulletChamberSize;
+    [SerializeField] Sprite hudImage;
     #endregion
 
     #region Private Fields
@@ -40,6 +42,7 @@ public class PersonalWeapon : MonoBehaviour
     public float Recoil { get => recoil; set => recoil = value; }
     public Transform RefLeft { get => refLeft; set => refLeft = value; }
     public Transform RefRight { get => refRight; set => refRight = value; }
+    public Sprite HudImage { get => hudImage; set => hudImage = value; }
     #endregion
 
     #region Unity Callbacks

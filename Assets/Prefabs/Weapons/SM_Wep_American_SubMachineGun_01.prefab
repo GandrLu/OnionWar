@@ -260,6 +260,7 @@ MonoBehaviour:
   recoil: 0.04
   timeBetweenShots: 0.1
   bulletChamberSize: 25
+  hudImage: {fileID: 21300002, guid: 6674e8c43c63e4f4184cbd009379498d, type: 3}
 --- !u!1 &5005003257936097591
 GameObject:
   m_ObjectHideFlags: 0
