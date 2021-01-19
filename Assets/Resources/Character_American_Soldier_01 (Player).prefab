@@ -277,7 +277,6 @@ MonoBehaviour:
   weaponPrefabs:
   - {fileID: 8383571182186691662, guid: 3963d3ecb6d341740938140bc2fc61ec, type: 3}
   - {fileID: 9170804269009093442, guid: 1ed6ed7486442fc43aefe8c7e0cc9c3a, type: 3}
-  rig: {fileID: 0}
   aimingPlane: {fileID: 211899156918901731}
   aimPosition: {fileID: 995230072}
   backPosition: {fileID: 1004932712}

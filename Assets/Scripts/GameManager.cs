@@ -31,13 +31,12 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     private PlayerShooting playerShooting;
     private Vector3 spawnPosition;
     private float mapImageScaleFactor = 5.5f;
-    private float hitFlashSpeed = 3f;
+    private float hitFlashSpeed = 1f;
     private float spawnTimer;
     private float spawnTime = 5f;
     private int cancelKeyHits;
     private bool isSpawnReady;
     private bool isPlayerDead;
-    private bool isHit;
     #endregion
 
     public Text AmmoText { get => ammoText; set => ammoText = value; }
@@ -106,16 +105,6 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
             if (++cancelKeyHits >= 2)
                 LeaveRoom();
         }
-
-        if (isHit)
-        {
-            hitImage.color = hitColor;
-        }
-        else
-        {
-            hitImage.color = Color.Lerp(hitImage.color, Color.clear, hitFlashSpeed * Time.deltaTime);
-        }
-        isHit = false;
     }
     #endregion
 
@@ -158,7 +147,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
 
     public void TakeHit()
     {
-        isHit = true;
+        StartCoroutine(LerpHitColor());
     }
     #endregion
 
@@ -184,6 +173,19 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         {
             Debug.LogFormat("Ignoring scene load for {0}", SceneManagerHelper.ActiveSceneName);
         }
+    }
+
+    private IEnumerator LerpHitColor()
+    {
+        float elapsedTime = 0f;
+        while (elapsedTime < hitFlashSpeed)
+        {
+            hitImage.color = Color.Lerp(hitColor, Color.clear, elapsedTime / hitFlashSpeed);
+            elapsedTime += Time.deltaTime;
+
+            yield return null;
+        }
+        hitImage.color = Color.clear;
     }
 
     private void SpawnPlayer()
