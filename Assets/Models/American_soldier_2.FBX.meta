@@ -1,7 +1,7 @@
 fileFormatVersion: 2
 guid: 2ac1460817a9a7146ae2af4352ce157a
 ModelImporter:
-  serializedVersion: 26
+  serializedVersion: 19300
   internalIDToNameTable:
   - first:
       1: 100000
@@ -559,7 +559,7 @@ ModelImporter:
       name: Character_Mat1
     second: {fileID: 2100000, guid: 22af96f9ba68eb54b9ce79bdf6661284, type: 2}
   materials:
-    importMaterials: 1
+    materialImportMode: 1
     materialName: 0
     materialSearch: 1
     materialLocation: 1
@@ -573,42 +573,42 @@ ModelImporter:
     rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: "\nClip 'Armature|Armature|Armature|Aiming_walk|Armature|Aiming_walk'
-      has import animation warnings that might lower retargeting quality:\nNote: Activate
-      translation DOF on avatar to improve retargeting quality.\n\t'UpperLeg_R' has
-      translation animation that will be discarded.\n\t'UpperLeg_L' has translation
+      has import animation warnings that might lower retargeting quality:\nNote:
+      Activate translation DOF on avatar to improve retargeting quality.\n\t'UpperLeg_R'
+      has translation animation that will be discarded.\n\t'UpperLeg_L' has translation
       animation that will be discarded.\n\nClip 'Armature|Armature|Armature|Rifle_idle|Armature|Rifle_idle'
-      has import animation warnings that might lower retargeting quality:\nNote: Activate
-      translation DOF on avatar to improve retargeting quality.\n\t'Shoulder_L' has
-      translation animation that will be discarded.\n\t'Shoulder_R' has translation
+      has import animation warnings that might lower retargeting quality:\nNote:
+      Activate translation DOF on avatar to improve retargeting quality.\n\t'Shoulder_L'
+      has translation animation that will be discarded.\n\t'Shoulder_R' has translation
       animation that will be discarded.\n\nClip 'Armature|Armature|Armature|Run|Armature|Run'
-      has import animation warnings that might lower retargeting quality:\nNote: Activate
-      translation DOF on avatar to improve retargeting quality.\n\t'Clavicle_L' has
-      translation animation that will be discarded.\n\t'Clavicle_R' has translation
+      has import animation warnings that might lower retargeting quality:\nNote:
+      Activate translation DOF on avatar to improve retargeting quality.\n\t'Clavicle_L'
+      has translation animation that will be discarded.\n\t'Clavicle_R' has translation
       animation that will be discarded.\n\t'UpperLeg_R' has translation animation
       that will be discarded.\n\t'UpperLeg_L' has translation animation that will
       be discarded.\n\nClip 'Armature|Armature|Armature|Strafe_left|Armature|Strafe_left'
-      has import animation warnings that might lower retargeting quality:\nNote: Activate
-      translation DOF on avatar to improve retargeting quality.\n\t'Shoulder_L' has
-      translation animation that will be discarded.\n\t'Shoulder_R' has translation
+      has import animation warnings that might lower retargeting quality:\nNote:
+      Activate translation DOF on avatar to improve retargeting quality.\n\t'Shoulder_L'
+      has translation animation that will be discarded.\n\t'Shoulder_R' has translation
       animation that will be discarded.\n\t'UpperLeg_R' has translation animation
       that will be discarded.\n\t'UpperLeg_L' has translation animation that will
       be discarded.\n\t'LowerLeg_L' has translation animation that will be discarded.\n\t'Ankle_L'
       has translation animation that will be discarded.\n\nClip 'Armature|Armature|Armature|Strafe_right|Armature|Strafe_right'
-      has import animation warnings that might lower retargeting quality:\nNote: Activate
-      translation DOF on avatar to improve retargeting quality.\n\t'Shoulder_L' has
-      translation animation that will be discarded.\n\t'Shoulder_R' has translation
+      has import animation warnings that might lower retargeting quality:\nNote:
+      Activate translation DOF on avatar to improve retargeting quality.\n\t'Shoulder_L'
+      has translation animation that will be discarded.\n\t'Shoulder_R' has translation
       animation that will be discarded.\n\t'UpperLeg_R' has translation animation
       that will be discarded.\n\t'UpperLeg_L' has translation animation that will
       be discarded.\n\t'LowerLeg_L' has translation animation that will be discarded.\n\t'Ankle_L'
       has translation animation that will be discarded.\n\nClip 'Armature|Armature|Armature|Walk|Armature|Walk'
-      has import animation warnings that might lower retargeting quality:\nNote: Activate
-      translation DOF on avatar to improve retargeting quality.\n\t'UpperLeg_R' has
-      translation animation that will be discarded.\n\t'UpperLeg_L' has translation
+      has import animation warnings that might lower retargeting quality:\nNote:
+      Activate translation DOF on avatar to improve retargeting quality.\n\t'UpperLeg_R'
+      has translation animation that will be discarded.\n\t'UpperLeg_L' has translation
       animation that will be discarded.\n\nClip 'Armature|Root_Run' has import animation
-      warnings that might lower retargeting quality:\nNote: Activate translation DOF
-      on avatar to improve retargeting quality.\n\t'UpperLeg_R' has translation animation
-      that will be discarded.\n\t'UpperLeg_L' has translation animation that will
-      be discarded.\n"
+      warnings that might lower retargeting quality:\nNote: Activate translation
+      DOF on avatar to improve retargeting quality.\n\t'UpperLeg_R' has translation
+      animation that will be discarded.\n\t'UpperLeg_L' has translation animation
+      that will be discarded.\n"
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
@@ -659,7 +659,6 @@ ModelImporter:
     normalSmoothingSource: 0
   referencedClips: []
   importAnimation: 1
-  copyAvatar: 0
   humanDescription:
     serializedVersion: 3
     human:
@@ -1408,8 +1407,10 @@ ModelImporter:
     hasExtraRoot: 1
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 3
   humanoidOversampling: 1
+  avatarSetup: 1
   additionalBone: 0
   userData: 
   assetBundleName: 

@@ -16,7 +16,11 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     [SerializeField] GameObject hudCanvas;
     [SerializeField] Slider lifepointSlider;
     [SerializeField] Text ammoText;
+    [SerializeField] Image itemImage;
+    [SerializeField] int notShootableLayer;
     [SerializeField] Text spawnText;
+    [SerializeField] Image hitImage;
+    [SerializeField] Color hitColor;
     #endregion
 
     #region Private Fields
@@ -27,15 +31,18 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     private PlayerShooting playerShooting;
     private Vector3 spawnPosition;
     private float mapImageScaleFactor = 5.5f;
+    private float hitFlashSpeed = 3f;
     private float spawnTimer;
     private float spawnTime = 5f;
     private int cancelKeyHits;
     private bool isSpawnReady;
     private bool isPlayerDead;
+    private bool isHit;
     #endregion
 
     public Text AmmoText { get => ammoText; set => ammoText = value; }
     public static GameManager Instance { get => instance; }
+    public Image ItemImage { get => itemImage; set => itemImage = value; }
 
     #region Unity Callbacks
     private void Awake()
@@ -99,6 +106,16 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
             if (++cancelKeyHits >= 2)
                 LeaveRoom();
         }
+
+        if (isHit)
+        {
+            hitImage.color = hitColor;
+        }
+        else
+        {
+            hitImage.color = Color.Lerp(hitImage.color, Color.clear, hitFlashSpeed * Time.deltaTime);
+        }
+        isHit = false;
     }
     #endregion
 
@@ -114,6 +131,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player other)
     {
         Debug.LogFormat("OnPlayerEnteredRoom() {0}", other.NickName);
+        // Equip correct weapon at joined players instance of this player
+        playerShooting.photonView.RPC(nameof(playerShooting.ChangeWeapon), other, playerShooting.ActiveWeaponIndex);
     }
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
@@ -136,6 +155,11 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         spawnTimer += spawnTime;
         spawnText.enabled = true;
     }
+
+    public void TakeHit()
+    {
+        isHit = true;
+    }
     #endregion
 
     #region Private Methods
@@ -145,10 +169,14 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         {
             Debug.LogFormat("We are Instantiating LocalPlayer from {0}", SceneManager.GetActiveScene().name);
             // we're in a room. spawn a character for the local player. it gets synced by using PhotonNetwork.Instantiate
-            player = PhotonNetwork.Instantiate(playerPrefab.name, new Vector3(0, -100, 0), Quaternion.identity, 0);
+            player = PhotonNetwork.Instantiate(playerPrefab.name, Vector3.zero, Quaternion.identity, 0);
             player.SetActive(false);
+            // Set layer of own hitboxes to not shootable to avoid shooting yourself
+            foreach (var hitbox in player.GetComponentsInChildren<HitBox>())
+                hitbox.gameObject.layer = notShootableLayer;
             playerDestructable = player.GetComponent<PlayerDestructable>();
             playerDestructable.DamageEvent.AddListener(UpdateHudLifepoints);
+            playerDestructable.DamageEvent.AddListener(TakeHit);
             playerMovement = player.GetComponent<PlayerMovement>();
             playerShooting = player.GetComponent<PlayerShooting>();
         }
