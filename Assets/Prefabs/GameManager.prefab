@@ -2915,6 +2915,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2190774109289117922}
   - component: {fileID: 2190774109289117923}
+  - component: {fileID: 9101972903011403002}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2964,6 +2965,20 @@ MonoBehaviour:
   spawnText: {fileID: 4885468918585845274}
   hitImage: {fileID: 8128583421991007623}
   hitColor: {r: 1, g: 0, b: 0, a: 0.83137256}
+--- !u!114 &9101972903011403002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2190774109289117920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 443224ec5e72b054eabf2f15c05f77cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  timerText: {fileID: 680788431}
+  roundTime: 600
 --- !u!1 &2706387344789837983
 GameObject:
   m_ObjectHideFlags: 0
