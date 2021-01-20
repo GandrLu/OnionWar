@@ -1272,10 +1272,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 710016347, guid: 48ab404dab80b9843ac36d51d5689cf0, type: 3}
-      propertyPath: m_AllowSwitchOff
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2190774109289117920, guid: 48ab404dab80b9843ac36d51d5689cf0,
         type: 3}
       propertyPath: m_Name
@@ -1338,14 +1334,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2190774109289117923, guid: 48ab404dab80b9843ac36d51d5689cf0,
         type: 3}
-      propertyPath: mapViewCamera
-      value: 
-      objectReference: {fileID: 491150304}
-    - target: {fileID: 2190774109289117923, guid: 48ab404dab80b9843ac36d51d5689cf0,
-        type: 3}
       propertyPath: spawnPointRoot
       value: 
       objectReference: {fileID: 1169871292}
+    - target: {fileID: 2190774109289117923, guid: 48ab404dab80b9843ac36d51d5689cf0,
+        type: 3}
+      propertyPath: mapViewCamera
+      value: 
+      objectReference: {fileID: 491150304}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 48ab404dab80b9843ac36d51d5689cf0, type: 3}
 --- !u!1 &52667208

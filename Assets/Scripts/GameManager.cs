@@ -14,10 +14,13 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     [SerializeField] GameObject spawnPointRoot;
     [SerializeField] GameObject spawnCanvas;
     [SerializeField] GameObject hudCanvas;
+    [SerializeField] GameObject menuCanvas;
     [SerializeField] Camera mapViewCamera;
     [SerializeField] Color hitColor;
     [SerializeField] ToggleGroup spawnToggleGroup;
     [SerializeField] Button spawnConfirmButton;
+    [SerializeField] Button menuResumeButton;
+    [SerializeField] Button menuQuitButton;
     [SerializeField] Slider lifepointSlider;
     [SerializeField] Text ammoText;
     [SerializeField] Text spawnText;
@@ -65,9 +68,15 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
             throw new MissingReferenceException();
         if (hudCanvas == null)
             throw new MissingReferenceException();
+        if (menuCanvas == null)
+            throw new MissingReferenceException();
         if (spawnToggleGroup == null)
             throw new MissingReferenceException();
         if (spawnConfirmButton == null)
+            throw new MissingReferenceException();
+        if (menuResumeButton == null)
+            throw new MissingReferenceException();
+        if (menuQuitButton == null)
             throw new MissingReferenceException();
         if (lifepointSlider == null)
             throw new MissingReferenceException();
@@ -97,6 +106,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         mainCamera.gameObject.SetActive(false);
         mapViewCamera.gameObject.SetActive(true);
         spawnConfirmButton.onClick.AddListener(SetSpawnReady);
+        menuResumeButton.onClick.AddListener(delegate { menuCanvas.SetActive(false); });
+        menuQuitButton.onClick.AddListener(delegate { LeaveRoom(); });
         isPlayerDead = true;
 
         var spawnPoints = new List<Vector3>();
@@ -149,8 +160,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
 
         if (Input.GetButtonDown("Cancel"))
         {
-            if (++cancelKeyHits >= 2)
-                LeaveRoom();
+            menuCanvas.SetActive(!menuCanvas.activeSelf);
         }
     }
     #endregion
