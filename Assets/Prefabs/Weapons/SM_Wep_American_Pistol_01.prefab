@@ -320,13 +320,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   refLeft: {fileID: 5420744504510230514}
   refRight: {fileID: 7521920441428720316}
+  hudImage: {fileID: 21300022, guid: 6674e8c43c63e4f4184cbd009379498d, type: 3}
+  audioClip: {fileID: 8300000, guid: 05dc8ab0beffabe469c78f79a3e7b3b3, type: 3}
   weaponType: 2
   accuracy: 0.02
   reloadTime: 1.5
   recoil: 0.07
   timeBetweenShots: 0.4
   bulletChamberSize: 8
-  hudImage: {fileID: 21300022, guid: 6674e8c43c63e4f4184cbd009379498d, type: 3}
+  hasAutomaticFire: 0
 --- !u!1 &9170946578018088000
 GameObject:
   m_ObjectHideFlags: 0

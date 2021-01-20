@@ -448,13 +448,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   refLeft: {fileID: 4867603652354753554}
   refRight: {fileID: 4867603650760719810}
+  hudImage: {fileID: 21300030, guid: 6674e8c43c63e4f4184cbd009379498d, type: 3}
+  audioClip: {fileID: 8300000, guid: 431e240010238a642b27202b695d408d, type: 3}
   weaponType: 1
   accuracy: 0.01
   reloadTime: 3
   recoil: 0.05
   timeBetweenShots: 0.7
   bulletChamberSize: 5
-  hudImage: {fileID: 21300030, guid: 6674e8c43c63e4f4184cbd009379498d, type: 3}
+  hasAutomaticFire: 0
 --- !u!1001 &49320472007782896
 PrefabInstance:
   m_ObjectHideFlags: 0

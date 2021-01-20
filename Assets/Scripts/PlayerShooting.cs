@@ -141,8 +141,16 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
 
         // Shooting
+        if (weaponInHands.HasAutomaticFire)
+        {
+        if (Input.GetButton("Fire1") && isAiming && isReadyToFire && !isReloading)
+            Shoot();
+        }
+        else
+        {
         if (Input.GetButtonDown("Fire1") && isAiming && isReadyToFire && !isReloading)
             Shoot();
+        }
     }
 
     public override void OnDisable()
@@ -252,7 +260,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     public void PlayShotEffects()
     {
         muzzleFlashParticles.Play();
-        audioSource.PlayOneShot(audioSource.clip);
+        audioSource.PlayOneShot(weaponInHands.AudioClip);
     }
     #endregion
 

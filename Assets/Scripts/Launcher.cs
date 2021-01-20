@@ -99,8 +99,10 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public override void OnDisconnected(DisconnectCause cause)
     {
-        controlPanel.SetActive(true);
-        progressLabel.SetActive(false);
+        if (controlPanel)
+            controlPanel.SetActive(true);
+        if (progressLabel)
+            progressLabel.SetActive(false);
 
         Debug.LogWarningFormat("PUN Basics Tutorial/Launcher: OnDisconnected() was called by " +
             "PUN with reason {0}", cause);

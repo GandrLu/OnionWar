@@ -13,13 +13,15 @@ public class PersonalWeapon : MonoBehaviour
     #region Serialized Fields
     [SerializeField] Transform refLeft;
     [SerializeField] Transform refRight;
+    [SerializeField] Sprite hudImage;
+    [SerializeField] AudioClip audioClip;
     [SerializeField] PersonalWeaponType weaponType;
     [SerializeField] float accuracy;
     [SerializeField] float reloadTime;
     [SerializeField] float recoil;
     [SerializeField] float timeBetweenShots;
     [SerializeField] int bulletChamberSize;
-    [SerializeField] Sprite hudImage;
+    [SerializeField] bool hasAutomaticFire;
     #endregion
 
     #region Private Fields
@@ -43,6 +45,8 @@ public class PersonalWeapon : MonoBehaviour
     public Transform RefLeft { get => refLeft; set => refLeft = value; }
     public Transform RefRight { get => refRight; set => refRight = value; }
     public Sprite HudImage { get => hudImage; set => hudImage = value; }
+    public bool HasAutomaticFire { get => hasAutomaticFire; set => hasAutomaticFire = value; }
+    public AudioClip AudioClip { get => audioClip; set => audioClip = value; }
     #endregion
 
     #region Unity Callbacks
