@@ -10,7 +10,7 @@ public class Launcher : MonoBehaviourPunCallbacks
 {
     #region Private Serializable Fields
 
-    [SerializeField] private byte maxPlayerPerRoom = 4;
+    [SerializeField] private byte maxPlayerPerRoom = 10;
     [SerializeField] private int levelNumberToLoad = 4;
 
     #endregion
