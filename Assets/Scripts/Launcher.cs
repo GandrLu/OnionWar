@@ -8,17 +8,18 @@ using UnityEngine.UI;
 
 public class Launcher : MonoBehaviourPunCallbacks
 {
-    #region Private Serializable Fields
-
-    [SerializeField] private byte maxPlayerPerRoom = 10;
-    [SerializeField] private int levelNumberToLoad = 4;
-
+    #region Serialized Fields
+    [SerializeField] GameObject controlPanel;
+    [SerializeField] GameObject progressLabel;
+    [SerializeField] Button quitButton;
+    [SerializeField] Text versionText;
+    [SerializeField] byte maxPlayerPerRoom = 10;
+    [SerializeField] int levelNumberToLoad = 4;
     #endregion
 
     #region Private Fields
-
     // This clients game version number
-    string gameVersion = "01.2021_01";
+    private string gameVersion = "02.2021_01";
     
     /// <summary>
     /// Keep track of the current process. Since connection is asynchronous and is based on several callbacks from Photon,
@@ -26,16 +27,6 @@ public class Launcher : MonoBehaviourPunCallbacks
     /// Typically this is used for the OnConnectedToMaster() callback.
     /// </summary>
     bool isConnecting;
-
-    #endregion
-
-    #region Public Fields
-
-    [SerializeField] private GameObject controlPanel;
-    [SerializeField] private GameObject progressLabel;
-    [SerializeField] private Button quitButton;
-    [SerializeField] private Text versionText;
-
     #endregion
 
     #region Unity CallBacks

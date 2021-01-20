@@ -6480,12 +6480,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d3c156f237af7344b0ec90289b38a00, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxPlayerPerRoom: 10
-  levelNumberToLoad: 4
   controlPanel: {fileID: 1950689306}
   progressLabel: {fileID: 226200855}
   quitButton: {fileID: 1056017371}
   versionText: {fileID: 1894697183}
+  maxPlayerPerRoom: 10
+  levelNumberToLoad: 4
 --- !u!4 &1384117412
 Transform:
   m_ObjectHideFlags: 0
@@ -9282,7 +9282,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: v0.2020.12
+  m_Text: version number
 --- !u!222 &1894697184
 CanvasRenderer:
   m_ObjectHideFlags: 0
