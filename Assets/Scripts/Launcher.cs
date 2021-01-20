@@ -11,6 +11,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     #region Private Serializable Fields
 
     [SerializeField] private byte maxPlayerPerRoom = 4;
+    [SerializeField] private int levelNumberToLoad = 4;
 
     #endregion
 
@@ -120,7 +121,7 @@ public class Launcher : MonoBehaviourPunCallbacks
         {
             Debug.Log("We load the default level");
 
-            PhotonNetwork.LoadLevel(4);
+            PhotonNetwork.LoadLevel(levelNumberToLoad);
         }
     }
 
