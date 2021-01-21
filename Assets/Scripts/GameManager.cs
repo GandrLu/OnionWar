@@ -10,45 +10,86 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
 {
     #region Serialized Fields
     [SerializeField] GameObject playerPrefab;
-    [SerializeField] ToggleGroup spawnToggleGroup;
-    [SerializeField] Button spawnConfirmButton;
+    [SerializeField] GameObject togglePrefab;
+    [SerializeField] GameObject spawnPointRoot;
     [SerializeField] GameObject spawnCanvas;
     [SerializeField] GameObject hudCanvas;
+    [SerializeField] GameObject menuCanvas;
+    [SerializeField] Camera mapViewCamera;
+    [SerializeField] Color hitColor;
+    [SerializeField] ToggleGroup spawnToggleGroup;
+    [SerializeField] Button spawnConfirmButton;
+    [SerializeField] Button menuResumeButton;
+    [SerializeField] Button menuQuitButton;
     [SerializeField] Slider lifepointSlider;
     [SerializeField] Text ammoText;
-    [SerializeField] Image itemImage;
-    [SerializeField] int notShootableLayer;
     [SerializeField] Text spawnText;
+    [SerializeField] Image itemImage;
     [SerializeField] Image hitImage;
-    [SerializeField] Color hitColor;
+    [SerializeField] int notShootableLayer;
     #endregion
 
     #region Private Fields
     private static GameManager instance;
+    private Dictionary<Toggle, Vector3> spawnTogglePositionPairs = new Dictionary<Toggle, Vector3>();
     private GameObject player;
+    private Camera mainCamera;
     private PlayerDestructable playerDestructable;
     private PlayerMovement playerMovement;
     private PlayerShooting playerShooting;
     private Vector3 spawnPosition;
     private float mapImageScaleFactor = 5.5f;
-    private float hitFlashSpeed = 3f;
+    private float hitFlashSpeed = 1f;
     private float spawnTimer;
     private float spawnTime = 5f;
     private int cancelKeyHits;
     private bool isSpawnReady;
     private bool isPlayerDead;
-    private bool isHit;
     #endregion
 
+    #region Properties
     public Text AmmoText { get => ammoText; set => ammoText = value; }
     public static GameManager Instance { get => instance; }
     public Image ItemImage { get => itemImage; set => itemImage = value; }
+    #endregion
 
     #region Unity Callbacks
     private void Awake()
     {
         if (lifepointSlider == null)
             throw new MissingReferenceException();
+        if (mapViewCamera == null)
+            throw new MissingReferenceException();
+        if (togglePrefab == null)
+            throw new MissingReferenceException();
+        if (spawnPointRoot == null)
+            throw new MissingReferenceException();
+        if (spawnCanvas == null)
+            throw new MissingReferenceException();
+        if (hudCanvas == null)
+            throw new MissingReferenceException();
+        if (menuCanvas == null)
+            throw new MissingReferenceException();
+        if (spawnToggleGroup == null)
+            throw new MissingReferenceException();
+        if (spawnConfirmButton == null)
+            throw new MissingReferenceException();
+        if (menuResumeButton == null)
+            throw new MissingReferenceException();
+        if (menuQuitButton == null)
+            throw new MissingReferenceException();
+        if (lifepointSlider == null)
+            throw new MissingReferenceException();
+        if (ammoText == null)
+            throw new MissingReferenceException();
+        if (spawnText == null)
+            throw new MissingReferenceException();
+        if (itemImage == null)
+            throw new MissingReferenceException();
+        if (hitImage == null)
+            throw new MissingReferenceException();
+
+        mainCamera = Camera.main;
     }
 
     private void Start()
@@ -62,15 +103,32 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         {
             InstantiatePlayer();
         }
+        mainCamera.gameObject.SetActive(false);
+        mapViewCamera.gameObject.SetActive(true);
         spawnConfirmButton.onClick.AddListener(SetSpawnReady);
+        menuResumeButton.onClick.AddListener(delegate { menuCanvas.SetActive(false); });
+        menuQuitButton.onClick.AddListener(delegate { LeaveRoom(); });
         isPlayerDead = true;
+
+        var spawnPoints = new List<Vector3>();
+        foreach (Transform child in spawnPointRoot.transform)
+            spawnPoints.Add(child.position);
+
+        foreach (var sp in spawnPoints)
+        {
+            var toggleObj = Instantiate(togglePrefab, spawnToggleGroup.transform);
+            var toggle = toggleObj.GetComponent<Toggle>();
+            var screenPos = mapViewCamera.WorldToScreenPoint(sp);
+            toggle.GetComponent<RectTransform>().anchoredPosition = screenPos;
+            toggle.group = spawnToggleGroup;
+            spawnToggleGroup.RegisterToggle(toggle);
+            spawnTogglePositionPairs.Add(toggle, sp);
+        }
+        spawnToggleGroup.EnsureValidState();
     }
 
     private void Update()
     {
-        spawnCanvas.SetActive(isPlayerDead && spawnTimer <= 0f);
-        hudCanvas.SetActive(!isPlayerDead);
-
         if (isPlayerDead)
         {
             if (spawnToggleGroup.AnyTogglesOn())
@@ -79,8 +137,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
                 {
                     if (toggle.isOn)
                     {
-                        var togglePos = toggle.transform.localPosition;
-                        spawnPosition = new Vector3(togglePos.x, 0.2f, togglePos.y) / mapImageScaleFactor;
+                        spawnPosition = spawnTogglePositionPairs[toggle];
                     }
                 }
             }
@@ -91,9 +148,9 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
             spawnTimer -= Time.deltaTime;
             spawnText.text = string.Format("{0:0}", spawnTimer);
         }
-        else if(isPlayerDead && spawnTimer <= 0f)
+        else if (isPlayerDead && spawnTimer <= 0f)
         {
-            spawnText.enabled = false;
+            ShowSpawnScreen();
         }
 
         if (isPlayerDead && isSpawnReady && spawnTimer <= 0f)
@@ -103,19 +160,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
 
         if (Input.GetButtonDown("Cancel"))
         {
-            if (++cancelKeyHits >= 2)
-                LeaveRoom();
+            menuCanvas.SetActive(!menuCanvas.activeSelf);
         }
-
-        if (isHit)
-        {
-            hitImage.color = hitColor;
-        }
-        else
-        {
-            hitImage.color = Color.Lerp(hitImage.color, Color.clear, hitFlashSpeed * Time.deltaTime);
-        }
-        isHit = false;
     }
     #endregion
 
@@ -134,6 +180,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         // Equip correct weapon at joined players instance of this player
         playerShooting.photonView.RPC(nameof(playerShooting.ChangeWeapon), other, playerShooting.ActiveWeaponIndex);
     }
+
     public override void OnPlayerLeftRoom(Player otherPlayer)
     {
         Debug.LogFormat("OnPlayerLeftRoom(){0}", otherPlayer.NickName);
@@ -154,11 +201,12 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         playerShooting.enabled = false;
         spawnTimer += spawnTime;
         spawnText.enabled = true;
+        hudCanvas.SetActive(false);
     }
 
     public void TakeHit()
     {
-        isHit = true;
+        StartCoroutine(LerpHitColor());
     }
     #endregion
 
@@ -186,6 +234,33 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         }
     }
 
+    private IEnumerator LerpHitColor()
+    {
+        float elapsedTime = 0f;
+        while (elapsedTime < hitFlashSpeed)
+        {
+            hitImage.color = Color.Lerp(hitColor, Color.clear, elapsedTime / hitFlashSpeed);
+            elapsedTime += Time.deltaTime;
+
+            yield return null;
+        }
+        hitImage.color = Color.clear;
+    }
+
+    private void SetSpawnReady()
+    {
+        if (spawnToggleGroup.AnyTogglesOn())
+            isSpawnReady = true;
+    }
+
+    private void ShowSpawnScreen()
+    {
+        spawnCanvas.SetActive(true);
+        spawnText.enabled = false;
+        mainCamera.gameObject.SetActive(false);
+        mapViewCamera.gameObject.SetActive(true);
+    }
+
     private void SpawnPlayer()
     {
         player.transform.position = spawnPosition;
@@ -194,17 +269,13 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         playerDestructable.Resurrect();
         playerMovement.enabled = true;
         playerShooting.enabled = true;
-        //player.SetActive(true);
         playerShooting.ReloadWeapon();
         isPlayerDead = false;
-        //spawnText.enabled = false;
         spawnTimer = 0f;
-    }
-
-    private void SetSpawnReady()
-    {
-        if (spawnToggleGroup.AnyTogglesOn())
-            isSpawnReady = true;
+        mainCamera.gameObject.SetActive(true);
+        mapViewCamera.gameObject.SetActive(false);
+        spawnCanvas.SetActive(false);
+        hudCanvas.SetActive(true);
     }
 
     private void UpdateHudLifepoints()

@@ -8,16 +8,18 @@ using UnityEngine.UI;
 
 public class Launcher : MonoBehaviourPunCallbacks
 {
-    #region Private Serializable Fields
-
-    [SerializeField] private byte maxPlayerPerRoom = 4;
-
+    #region Serialized Fields
+    [SerializeField] GameObject controlPanel;
+    [SerializeField] GameObject progressLabel;
+    [SerializeField] Button quitButton;
+    [SerializeField] Text versionText;
+    [SerializeField] byte maxPlayerPerRoom = 10;
+    [SerializeField] int levelNumberToLoad = 4;
     #endregion
 
     #region Private Fields
-
     // This clients game version number
-    string gameVersion = "01.2021_01";
+    private string gameVersion = "02.2021_01";
     
     /// <summary>
     /// Keep track of the current process. Since connection is asynchronous and is based on several callbacks from Photon,
@@ -25,16 +27,6 @@ public class Launcher : MonoBehaviourPunCallbacks
     /// Typically this is used for the OnConnectedToMaster() callback.
     /// </summary>
     bool isConnecting;
-
-    #endregion
-
-    #region Public Fields
-
-    [SerializeField] private GameObject controlPanel;
-    [SerializeField] private GameObject progressLabel;
-    [SerializeField] private Button quitButton;
-    [SerializeField] private Text versionText;
-
     #endregion
 
     #region Unity CallBacks
@@ -98,8 +90,10 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public override void OnDisconnected(DisconnectCause cause)
     {
-        controlPanel.SetActive(true);
-        progressLabel.SetActive(false);
+        if (controlPanel)
+            controlPanel.SetActive(true);
+        if (progressLabel)
+            progressLabel.SetActive(false);
 
         Debug.LogWarningFormat("PUN Basics Tutorial/Launcher: OnDisconnected() was called by " +
             "PUN with reason {0}", cause);
@@ -120,7 +114,7 @@ public class Launcher : MonoBehaviourPunCallbacks
         {
             Debug.Log("We load the default level");
 
-            PhotonNetwork.LoadLevel(3);
+            PhotonNetwork.LoadLevel(levelNumberToLoad);
         }
     }
 
