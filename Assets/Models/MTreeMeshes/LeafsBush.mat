@@ -1,0 +1,76 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 6
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: LeafsBush
+  m_Shader: {fileID: 4800000, guid: 364ae1069b1778f43b5e632a66bdb48e, type: 3}
+  m_ShaderKeywords: _ALPHATEST_ON _GLOSSYREFLECTIONS_OFF _LEAFTYPE_DEFAULT _NORMALMAP
+    _SPECULARHIGHLIGHTS_OFF _WINDQUALITY_NONE
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BumpMap:
+        m_Texture: {fileID: 2800000, guid: 484e5ae7bf0555b4d984e8c7cf893017, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 8b0017825887ee44e83ac0cb49ceadf0, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ToonRamp:
+        m_Texture: {fileID: 2800000, guid: 7f01879ed8df37c47970324c0ba2df4d, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _texcoord:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _texcoord4:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Floats:
+    - _BumpScale: 1
+    - _ColorShifting: 0
+    - _ColorSource: 0
+    - _ColorVariation: 0
+    - _CullMode: 0
+    - _Cutoff: 0.341
+    - _DoubleSidedNormalMode: 2
+    - _GlobalTurbulenceInfluence: 1
+    - _GlobalWindInfluence: 1
+    - _Glossiness: 0
+    - _GlossyReflections: 0
+    - _Hue: 0
+    - _Metallic: 0
+    - _OcclusionStrength: 1
+    - _Saturation: 0.94
+    - _SpecularHighlights: 0
+    - _ToonStyle: 0.261
+    - _TransAmbient: 0.887
+    - _TransDirect: 0.659
+    - _TransNormalDistortion: 0.96
+    - _TransScale: 1
+    - _TransScattering: 3.1
+    - _TransShadow: 0.521
+    - _Translucency: 5.2
+    - _TranslucencyEnum: 1
+    - _Value: 0.68
+    - _WindModeLeaves: 0
+    - __dirty: 1
+    m_Colors:
+    - _Color: {r: 0.91744417, g: 1, b: 0.83823526, a: 1}
+    - _OutlineColor: {r: 0, g: 0, b: 0, a: 0}
+    - _TranslucencyTint: {r: 1, g: 1, b: 1, a: 1}
+    - _TransmissionTint: {r: 0.2352941, g: 0.3294118, b: 0, a: 1}
