@@ -51,6 +51,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     private float reloadCooldownTimer, shotCooldownTimer;
     private Vector3 shotPosition;
     private Vector3 aimHoldRotation;
+    private Vector3 aimingPoint = new Vector3();
 
     public int ActiveWeaponIndex { get => activeWeaponIndex; set => activeWeaponIndex = value; }
     #endregion
@@ -356,7 +357,8 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             var shotDirection = transform.forward + new Vector3(x, y, 0);
             //Debug.DrawRay(shotPosition, shotDirection * 20, Color.blue, 60);
             Ray shotRay = new Ray(shotPosition, shotDirection);
-            PhotonNetwork.Instantiate("ProjectileTrail", shotPosition, Quaternion.LookRotation(shotDirection));
+            var dstVec = aimingPoint - shotPosition;
+            weaponInHands.FireGun(shotPosition, shotPosition + shotDirection * dstVec.magnitude);
 
             // Perform the raycast and if it hits something on the shootable layer...
             if (Physics.Raycast(shotRay, out shootableHit, weaponInHands.Range, shootableAndFloorMask))
@@ -368,10 +370,11 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         }
         else
         {
-            var shotDirection = shootableHit.point - shotPosition + new Vector3(x, y, 0);
+            var shotDirection = (shootableHit.point - shotPosition).normalized + new Vector3(x, y, 0);
             //Debug.DrawRay(shotPosition, shotDirection * 10, Color.cyan, 60);
             Ray shotRay = new Ray(shotPosition, shotDirection);
-            PhotonNetwork.Instantiate("ProjectileTrail", shotPosition, Quaternion.LookRotation(shotDirection));
+            var dstVec = aimingPoint - shotPosition;
+            weaponInHands.FireGun(shotPosition, shotPosition + shotDirection * dstVec.magnitude);
 
             RaycastHit directShotHit;
             if (Physics.Raycast(shotRay, out directShotHit, weaponInHands.Range, shootableAndFloorMask))
@@ -389,6 +392,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         // Create a ray from the mouse cursor on screen in the direction of the camera.
         Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         Vector3 shotTarget = new Vector3();
+        
         // Perform the raycast and if it hits something on the shootable layer...
         if (Physics.Raycast(camRay, out shootableHit, camRayLength, shootableMask))
         {
@@ -406,6 +410,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         RaycastHit aimingPos;
         if (Physics.Raycast(shotPosition, shotTarget - shotPosition, out aimingPos, weaponInHands.Range, shootableAndFloorMask))
         {
+            aimingPoint = aimingPos.point;
             aimingLine1.SetPosition(1, aimingPos.point);
             aimingLine2.SetPosition(0, aimingPos.point);
         }

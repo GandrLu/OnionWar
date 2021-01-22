@@ -29,7 +29,10 @@ public class PersonalWeapon : MonoBehaviour
     private ParticleSystem muzzleFlash;
     private LineRenderer aimingLine1;
     private LineRenderer aimingLine2;
+    private LineRenderer firingLine;
     private Transform shootingPosition;
+    private float firingLineTimer;
+    private float firingLineTime = 0.1f;
     private int loadedBullets;
     #endregion
 
@@ -51,26 +54,48 @@ public class PersonalWeapon : MonoBehaviour
     public Sprite HudImage { get => hudImage; set => hudImage = value; }
     public bool HasAutomaticFire { get => hasAutomaticFire; set => hasAutomaticFire = value; }
     public AudioClip AudioClip { get => audioClip; set => audioClip = value; }
+    public LineRenderer FiringLine { get => firingLine; set => firingLine = value; }
     #endregion
 
     #region Unity Callbacks
     private void Awake()
     {
         LineRenderer[] lineRenderers = GetComponentsInChildren<LineRenderer>();
-        if (lineRenderers.Length >= 2)
+        if (lineRenderers.Length >= 3)
         {
             AimingLine1 = lineRenderers[0];
             AimingLine2 = lineRenderers[1];
+            FiringLine = lineRenderers[2];
         }
         if (AimingLine1 == null)
             throw new MissingReferenceException("Aiming line 1 renderer missing!");
         if (AimingLine2 == null)
             throw new MissingReferenceException("Aiming line 2 renderer missing!");
+        if (FiringLine == null)
+            throw new MissingReferenceException("Firing line renderer missing!");
         MuzzleFlash = GetComponentInChildren<ParticleSystem>();
         if (MuzzleFlash == null)
             throw new MissingReferenceException("Muzzle flash particle system missing!");
         ShootingPosition = AimingLine1.transform;
         LoadedBullets = BulletChamberSize;
+    }
+
+    private void Update()
+    {
+        if (firingLineTimer <= 0f)
+            FiringLine.enabled = false;
+        else
+            firingLineTimer -= Time.deltaTime;
+    }
+    #endregion
+
+    #region Public Methods
+    public void FireGun(Vector3 pos1, Vector3 pos2)
+    {
+        firingLineTimer = firingLineTime;
+        FiringLine.enabled = true;
+        FiringLine.SetPosition(0, pos1);
+        FiringLine.SetPosition(1, pos2);
     }
     #endregion
 }
