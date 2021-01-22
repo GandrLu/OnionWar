@@ -150,7 +150,6 @@ GameObject:
   - component: {fileID: 4999533835222301719}
   - component: {fileID: 4973896693483375645}
   - component: {fileID: 4981776200555397325}
-  - component: {fileID: 5014519499773398235}
   - component: {fileID: 7455976205015706800}
   m_Layer: 0
   m_Name: SM_Wep_American_SubMachineGun_01
@@ -226,20 +225,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!64 &5014519499773398235
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5004941494096973913}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 0
-  serializedVersion: 4
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 43198477031179476, guid: 5dac9b959ac0dfe4cb7ddd0f9dc4da8e, type: 2}
 --- !u!114 &7455976205015706800
 MonoBehaviour:
   m_ObjectHideFlags: 0
