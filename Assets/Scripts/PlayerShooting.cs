@@ -33,7 +33,8 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     private Animator anim;
     private AudioSource audioSource;
     private PlayerMovement playerMovement;
-    private LineRenderer aimingLine;
+    private LineRenderer aimingLine1;
+    private LineRenderer aimingLine2;
     private PersonalWeapon weaponInHands;
     private ParticleSystem muzzleFlashParticles;
     // RaycastHit variable to store information about what was hit by the aiming ray.
@@ -41,6 +42,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
     private bool isAiming, isReloading, isReadyToFire;
     private int shootableMask;
+    private int shootableAndFloorMask;
     private int activeWeaponIndex = 0;
     private float aimingDistance = 30f;
     private float camRayLength = 100f;
@@ -77,6 +79,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     private void Awake()
     {
         shootableMask = LayerMask.GetMask(new string[] { "Default", "HitBox" });
+        shootableAndFloorMask = LayerMask.GetMask(new string[] { "Default", "HitBox", "Floor" });
         anim = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
         playerMovement = GetComponent<PlayerMovement>();
@@ -128,7 +131,8 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
         // Aiming
         isAiming = Input.GetButton("Fire2") || forceAiming;
-        aimingLine.enabled = isAiming && isReadyToFire && !isReloading;
+        aimingLine1.enabled = isAiming && isReadyToFire && !isReloading;
+        aimingLine2.enabled = isAiming && isReadyToFire && !isReloading;
 
         if (isAiming)
         {
@@ -156,8 +160,10 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     public override void OnDisable()
     {
         base.OnDisable();
-        if (aimingLine != null)
-            aimingLine.enabled = false;
+        if (aimingLine1 != null)
+            aimingLine1.enabled = false;
+        if (aimingLine2 != null)
+            aimingLine2.enabled = false;
     }
 
     void OnAnimatorIK()
@@ -238,7 +244,8 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         SetupIkTargets();
 
         muzzleFlashParticles = weaponInHands.MuzzleFlash;
-        aimingLine = weaponInHands.AimingLine;
+        aimingLine1 = weaponInHands.AimingLine1;
+        aimingLine2 = weaponInHands.AimingLine2;
         aimingPlane.localPosition = new Vector3(0, aimPosition.transform.position.y, 0);
         ActiveWeaponIndex = weaponIndex;
         GameManager.Instance.ItemImage.sprite = weaponInHands.HudImage;
@@ -352,7 +359,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             PhotonNetwork.Instantiate("ProjectileTrail", shotPosition, Quaternion.LookRotation(shotDirection));
 
             // Perform the raycast and if it hits something on the shootable layer...
-            if (Physics.Raycast(shotRay, out shootableHit, camRayLength, shootableMask))
+            if (Physics.Raycast(shotRay, out shootableHit, weaponInHands.Range, shootableAndFloorMask))
             {
                 var hitBox = shootableHit.collider.GetComponent<HitBox>();
                 if (hitBox != null)
@@ -367,7 +374,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             PhotonNetwork.Instantiate("ProjectileTrail", shotPosition, Quaternion.LookRotation(shotDirection));
 
             RaycastHit directShotHit;
-            if (Physics.Raycast(shotRay, out directShotHit, camRayLength, shootableMask))
+            if (Physics.Raycast(shotRay, out directShotHit, weaponInHands.Range, shootableAndFloorMask))
             {
                 var hitBox = directShotHit.collider.GetComponent<HitBox>();
                 if (hitBox != null)
@@ -378,7 +385,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
     private void Aim()
     {
-        aimingLine.SetPosition(0, shotPosition);
+        aimingLine1.SetPosition(0, shotPosition);
         // Create a ray from the mouse cursor on screen in the direction of the camera.
         Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         Vector3 shotTarget = new Vector3();
@@ -388,13 +395,24 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             Vector3 aimingVector = shootableHit.point - shotPosition;
             //Debug.Log("Pos " + playerToMouse);
             //Debug.Log("ScreenRay " + shootableHit.point);
-            aimingLine.SetPosition(1, shootableHit.point);
+            aimingLine2.SetPosition(1, shootableHit.point);
             shotTarget = shootableHit.point;
         }
         else
         {
-            aimingLine.SetPosition(1, shotPosition + transform.forward * aimingDistance);
+            aimingLine2.SetPosition(1, shotPosition + transform.forward * aimingDistance);
             shotTarget = shotPosition + transform.forward * aimingDistance;
+        }
+        RaycastHit aimingPos;
+        if (Physics.Raycast(shotPosition, shotTarget - shotPosition, out aimingPos, weaponInHands.Range, shootableAndFloorMask))
+        {
+            aimingLine1.SetPosition(1, aimingPos.point);
+            aimingLine2.SetPosition(0, aimingPos.point);
+        }
+        else
+        {
+            aimingLine1.SetPosition(1, shotTarget);
+            aimingLine2.SetPosition(0, shotTarget);
         }
         aimPosition.forward = shotTarget - shotPosition;
         aimHoldRotation = shotTarget - shotPosition;
