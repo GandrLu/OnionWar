@@ -507,9 +507,9 @@ MonoBehaviour:
   hudImage: {fileID: 21300002, guid: 6674e8c43c63e4f4184cbd009379498d, type: 3}
   audioClip: {fileID: 8300000, guid: 4a2eb6013b50e084f80c144df2f63936, type: 3}
   weaponType: 1
-  accuracy: 0.006
+  inaccuracy: 3
   reloadTime: 2.5
-  recoil: 0.04
+  recoil: 2
   timeBetweenShots: 0.1
   bulletChamberSize: 25
   range: 75

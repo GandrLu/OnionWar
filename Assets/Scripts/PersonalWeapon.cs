@@ -16,7 +16,7 @@ public class PersonalWeapon : MonoBehaviour
     [SerializeField] Sprite hudImage;
     [SerializeField] AudioClip audioClip;
     [SerializeField] PersonalWeaponType weaponType;
-    [SerializeField] float accuracy;
+    [SerializeField] float inaccuracy;
     [SerializeField] float reloadTime;
     [SerializeField] float recoil;
     [SerializeField] float timeBetweenShots;
@@ -46,9 +46,9 @@ public class PersonalWeapon : MonoBehaviour
     public int LoadedBullets { get => loadedBullets; set => loadedBullets = value; }
     public int BulletChamberSize { get => bulletChamberSize; set => bulletChamberSize = value; }
     public float ReloadTime { get => reloadTime; set => reloadTime = value; }
-    public float Accuracy { get => accuracy; set => accuracy = value; }
+    public float Inaccuracy { get => inaccuracy * 0.001f; set => inaccuracy = value; }
     public int Range { get => range; set => range = value; }
-    public float Recoil { get => recoil; set => recoil = value; }
+    public float Recoil { get => recoil * 0.01f; set => recoil = value; }
     public Transform RefLeft { get => refLeft; set => refLeft = value; }
     public Transform RefRight { get => refRight; set => refRight = value; }
     public Sprite HudImage { get => hudImage; set => hudImage = value; }

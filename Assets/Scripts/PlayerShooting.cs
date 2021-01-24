@@ -357,7 +357,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
         if (currentInaccuracy < 0.00001f)
             currentInaccuracy = 0f;
-        CursorManager.Instance.ResizeCrosshair(currentInaccuracy + weaponInHands.Accuracy);
+        CursorManager.Instance.ResizeCrosshair(currentInaccuracy + weaponInHands.Inaccuracy);
     }
 
     private void ReduceBullets()
@@ -406,7 +406,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         aimingLine1.enabled = false;
         aimingLine2.enabled = false;
         // Inaccuracy
-        var combinedInaccuracy = weaponInHands.Accuracy + currentInaccuracy;
+        var combinedInaccuracy = weaponInHands.Inaccuracy + currentInaccuracy;
         var x = inaccuracyShootImpact *
             Random.Range(-combinedInaccuracy, combinedInaccuracy);
         var y = inaccuracyShootImpact *

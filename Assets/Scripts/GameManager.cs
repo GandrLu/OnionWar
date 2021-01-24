@@ -41,7 +41,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     private float mapImageScaleFactor = 5.5f;
     private float hitFlashSpeed = 1f;
     private float spawnTimer;
-    private float spawnTime = 5f;
+    private float spawnTime = 3f;
     private int cancelKeyHits;
     private bool isSpawnReady;
     private bool isPlayerDead;
