@@ -1,44 +1,43 @@
 ﻿using UnityEngine;
 using Photon.Pun;
 
-public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
+public class PlayerMovement : MonoBehaviourPunCallbacks
 {
-    enum ControlScheme
-    {
-        bodyDirect,
-        screenAligned
-    }
-
-    [SerializeField] float m_Speed = 6f;            // The speed that the player will move at.
+    #region Serialized Fields
+    [SerializeField] ControlScheme controlScheme;           // 0 is move in body direction, 1 is move in screen direction
+    [SerializeField] float movementSpeed = 6f;     // The speed that the player will move at.
     [SerializeField] float aimingSlownessFactor = 0.6f;
     [SerializeField] float sprintFactor = 1.5f;
-    [SerializeField] bool forceAiming;
-    private Vector3 movement;                   // The vector to store the direction of the player's movement.
-    private Vector3 cameraRotation;
-    private Animator anim;                      // Reference to the animator component.
-    private Rigidbody playerRigidbody;          // Reference to the player's rigidbody.
-    private int aimingPlaneMask;                      // A layer mask so that a ray can be cast just at gameobjects on the floor layer.
-    private float camRayLength = 100f;          // The length of the ray from the camera into the scene.
-    //private bool isAiming = false;
-    private bool m_IsSprinting = false;
-    private int m_ScreenWidth = 0;
-    private float h;
-    private float v;
-    private bool isAiming;
-    public Vector3 aimingAtShootableDirection;
-    public bool aimingAtShootable;
-    // 0 is move in body direction, 1 is move in screen direction
-    [SerializeField] ControlScheme controlScheme;
-    private Camera mainCamera;
-    private float speed;
+    #endregion
 
-    public float Speed { get => speed; set => speed = value; }
-
-    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    #region Private Enums
+    private enum ControlScheme
     {
-
+        bodyDirect, screenAligned
     }
+    #endregion
 
+    #region Private Fields
+    private Animator anim;                      // Reference to the animator component.
+    private Camera mainCamera;
+    private Rigidbody playerRigidbody;          // Reference to the player's rigidbody.
+    private PlayerShooting playerShooting;
+    private Vector3 movement;                   // The vector to store the player's movement.
+    private Vector3 cameraRotation;             // The vector to store the cameras rotation
+    private float horizontalAxisInput;
+    private float verticalAxisInput;
+    private float totalMovementSpeedSquared;
+    private int aimingPlaneMask;                      // A layer mask so that a ray can be cast just at gameobjects on the floor layer.
+    private bool isAiming;
+    private bool isSprinting;
+    private readonly float camRayLength = 100f;          // The length of the ray from the camera into the scene.
+    #endregion
+
+    #region Public Properties
+    public float TotalMovementSpeedSquared { get => totalMovementSpeedSquared; set => totalMovementSpeedSquared = value; }
+    #endregion
+
+    #region Unity Callbacks
     void Awake()
     {
         // Create a layer mask for the floor layer.
@@ -47,8 +46,14 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         // Set up references.
         anim = GetComponent<Animator>();
         playerRigidbody = GetComponent<Rigidbody>();
+        playerShooting = GetComponent<PlayerShooting>();
 
-        m_ScreenWidth = Screen.width;
+        if (anim == null)
+            throw new MissingReferenceException();
+        if (playerRigidbody == null)
+            throw new MissingReferenceException();
+        if (playerShooting == null)
+            throw new MissingReferenceException();
     }
 
     private void Start()
@@ -63,119 +68,49 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
     void Update()
     {
         if (photonView.IsMine == false && PhotonNetwork.IsConnected == true)
-        {
             return;
-        }
-        // Store the input axes.
-        h = Input.GetAxisRaw("Horizontal");
-        v = Input.GetAxisRaw("Vertical");
 
-        isAiming = Input.GetButton("Fire2") || forceAiming;
-        m_IsSprinting = Input.GetButton("Sprint");
-        cameraRotation = mainCamera.transform.rotation.eulerAngles;
-
+        // Process input
+        horizontalAxisInput = Input.GetAxisRaw("Horizontal");
+        verticalAxisInput = Input.GetAxisRaw("Vertical");
+        isSprinting = Input.GetButton("Sprint");
+        isAiming = playerShooting.currentPlayerState == PlayerShooting.playerState.aiming;
         // Change control scheme with 1 and 2 on alphabetical keyboard
         if (Input.GetButton("MovementDirectScheme"))
             controlScheme = ControlScheme.bodyDirect;
         else if (Input.GetButton("MovementScreenScheme"))
             controlScheme = ControlScheme.screenAligned;
-    }
 
+        cameraRotation = mainCamera.transform.rotation.eulerAngles;
+    }
 
     void FixedUpdate()
     {
         if (photonView.IsMine == false && PhotonNetwork.IsConnected == true)
-        {
             return;
-        }
+
         // Move the player around the scene.
-        Move(h, v, isAiming);
+        Move(horizontalAxisInput, verticalAxisInput, isAiming);
 
         // Turn the player to face the mouse cursor.
         Turning(isAiming);
 
         // Animate the player.
-        Animating(h, v, isAiming);
+        Animating(horizontalAxisInput, verticalAxisInput, isAiming);
     }
+    #endregion
 
-    void Move(float h, float v, bool aiming)
+    #region Private Methods
+    private void Animating(float horizontalMove, float verticalMove, bool isAiming)
     {
-        if (aiming)
-            ApplyAimedMovement(h, v);
-        else
-            ApplyUnaimedMovement(h, v);
-    }
+        // Determine if character moves
+        bool isWalking = IsWalking(horizontalMove, verticalMove);
 
-    void Turning(bool aiming)
-    {
-        if (aiming)
-        {
-            // Create a ray from the mouse cursor on screen in the direction of the camera.
-            Ray camRay = mainCamera.ScreenPointToRay(Input.mousePosition);
-
-            // Perform the raycast and if it hits something on the floor layer...
-            if (Physics.Raycast(camRay, out RaycastHit floorHit, camRayLength, aimingPlaneMask))
-            {
-                // Create a vector from the player to the point on the floor the raycast from the mouse hit.
-                Vector3 playerToMouse = floorHit.point - transform.position;
-
-                // Ensure the vector is entirely along the floor plane.
-                playerToMouse.y = 0f;
-
-                // Create a quaternion (rotation) based on looking down the vector from the player to the mouse.
-                Quaternion newRotation = Quaternion.LookRotation(playerToMouse);
-
-                // Set the player's rotation to this new rotation.
-                playerRigidbody.MoveRotation(newRotation);
-            }
-        }
-        else if (controlScheme == ControlScheme.bodyDirect)
-        {
-            // Create a ray from the mouse cursor on screen in the direction of the camera.
-            Ray camRay = mainCamera.ScreenPointToRay(Input.mousePosition);
-
-            // Perform the raycast and if it hits something on the floor layer...
-            if (Physics.Raycast(camRay, out RaycastHit floorHit, camRayLength, aimingPlaneMask))
-            {
-                // Create a vector from the player to the point on the floor the raycast from the mouse hit.
-                Vector3 playerToMouse = floorHit.point - transform.position;
-
-                // Ensure the vector is entirely along the floor plane.
-                playerToMouse.y = 0f;
-                playerToMouse.Normalize();
-
-                // Set the player's rotation to this new rotation.
-                Vector3 alignedRotate;
-                if (h != 0 || v != 0)
-                    alignedRotate = Quaternion.LookRotation(playerToMouse) * new Vector3(h, 0, v).normalized;
-                else
-                    alignedRotate = Quaternion.LookRotation(playerToMouse) * Vector3.forward;
-                
-                if (alignedRotate != Vector3.zero)
-                    transform.forward = alignedRotate;
-            }
-        }
-        else if (controlScheme == ControlScheme.screenAligned)
-        {
-            var rotate = new Vector3(h, 0, v);
-            var alignedRotate = Quaternion.Euler(0, cameraRotation.y, 0) * rotate;
-            if (alignedRotate != Vector3.zero)
-                transform.forward = alignedRotate;
-        }
-    }
-
-    void Animating(float h, float v, bool aiming)
-    {
-        // Create a boolean that is true if either of the input axes is non-zero.
-        // Only considering vertical movement because in walking mode there is 
-        // no sideway movement.
-        bool walking = IsWalking(h, v);
-
-        // Tell the animator whether or not the player is walking.
-        anim.SetBool("IsWalking", walking);
-        anim.SetBool("IsAiming", aiming);
-        anim.SetFloat("vertical", v);
-        anim.SetFloat("horizontal", h);
+        // Tell the animator whether or not the player is walking etc.
+        anim.SetBool("IsWalking", isWalking);
+        anim.SetBool("IsAiming", isAiming);
+        anim.SetFloat("vertical", verticalMove);
+        anim.SetFloat("horizontal", horizontalMove);
     }
 
     private void ApplyAimedMovement(float horizontal, float vertical)
@@ -183,8 +118,8 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         if (controlScheme == ControlScheme.bodyDirect)
         {
             var absoluteMovement = new Vector3(horizontal, 0, vertical).normalized;
-            absoluteMovement *= Time.fixedDeltaTime * m_Speed * aimingSlownessFactor;
-            Speed = absoluteMovement.sqrMagnitude;
+            absoluteMovement *= Time.fixedDeltaTime * movementSpeed * aimingSlownessFactor;
+            TotalMovementSpeedSquared = absoluteMovement.sqrMagnitude;
 
             var angle = Vector3.SignedAngle(Vector3.forward, transform.forward, Vector3.up);
             Vector3 alignedMovement = Quaternion.Euler(0, angle, 0) * absoluteMovement;
@@ -193,9 +128,9 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         }
         else if (controlScheme == ControlScheme.screenAligned)
         {
-            movement = new Vector3(h, 0, v).normalized;
-            movement *= Time.fixedDeltaTime * m_Speed * aimingSlownessFactor;
-            Speed = movement.sqrMagnitude;
+            movement = new Vector3(horizontalAxisInput, 0, verticalAxisInput).normalized;
+            movement *= Time.fixedDeltaTime * movementSpeed * aimingSlownessFactor;
+            TotalMovementSpeedSquared = movement.sqrMagnitude;
 
             var alignedMovement = Quaternion.Euler(0, cameraRotation.y, 0) * movement;
             playerRigidbody.MovePosition(playerRigidbody.position + alignedMovement);
@@ -208,31 +143,95 @@ public class PlayerMovement : MonoBehaviourPunCallbacks, IPunObservable
         {
             movement = transform.forward * Mathf.Abs(vertical) + transform.forward * Mathf.Abs(horizontal);
             movement.Normalize();
-            movement *= m_Speed * Time.fixedDeltaTime;
-            if (m_IsSprinting)
+            movement *= movementSpeed * Time.fixedDeltaTime;
+            if (isSprinting)
             {
                 movement *= sprintFactor;
             }
-            Speed = movement.sqrMagnitude;
+            TotalMovementSpeedSquared = movement.sqrMagnitude;
 
             playerRigidbody.MovePosition(playerRigidbody.position + movement);
         }
         else if (controlScheme == ControlScheme.screenAligned)
         {
-            movement = new Vector3(h, 0, v).normalized;
-            movement *= m_Speed * Time.fixedDeltaTime;
-            if (m_IsSprinting)
+            movement = new Vector3(horizontalAxisInput, 0, verticalAxisInput).normalized;
+            movement *= movementSpeed * Time.fixedDeltaTime;
+            if (isSprinting)
             {
                 movement *= sprintFactor;
             }
-            Speed = movement.sqrMagnitude;
+            TotalMovementSpeedSquared = movement.sqrMagnitude;
 
             var alignedMovement = Quaternion.Euler(0, cameraRotation.y, 0) * movement;
             playerRigidbody.MovePosition(playerRigidbody.position + alignedMovement);
         }
     }
+
     private bool IsWalking(float h, float v)
     {
-            return v != 0f || h != 0f;
+        return v != 0f || h != 0f;
     }
+
+    private void Move(float h, float v, bool aiming)
+    {
+        if (aiming)
+            ApplyAimedMovement(h, v);
+        else
+            ApplyUnaimedMovement(h, v);
+    }
+
+    private void Turning(bool aiming)
+    {
+        if (aiming)
+        {
+            // Create a ray from the mouse cursor on screen in the direction of the camera.
+            Ray camRay = mainCamera.ScreenPointToRay(Input.mousePosition);
+
+            // Perform the raycast and if it hits something on the floor layer...
+            if (Physics.Raycast(camRay, out RaycastHit floorHit, camRayLength, aimingPlaneMask))
+            {
+                // Create a vector from the player to the point on the floor the raycast from the mouse hit.
+                Vector3 playerToMouse = floorHit.point - transform.position;
+                // Ensure the vector is entirely horizontal
+                playerToMouse.y = 0f;
+
+                // Set the player's rotation to this new rotation.
+                transform.forward = playerToMouse;
+            }
+        }
+        else if (controlScheme == ControlScheme.bodyDirect)
+        {
+            // Create a ray from the mouse cursor on screen in the direction of the camera.
+            Ray camRay = mainCamera.ScreenPointToRay(Input.mousePosition);
+
+            // Perform the raycast and if it hits something on the floor layer...
+            if (Physics.Raycast(camRay, out RaycastHit floorHit, camRayLength, aimingPlaneMask))
+            {
+                // Create a vector from the player to the point on the floor the raycast from the mouse hit.
+                Vector3 playerToMouse = floorHit.point - transform.position;
+                // Ensure the vector is entirely horizontal
+                playerToMouse.y = 0f;
+                // Normalize it to calculate it with input
+                playerToMouse.Normalize();
+
+                // Set the player's rotation to this new rotation.
+                Vector3 alignedRotate;
+                if (horizontalAxisInput != 0 || verticalAxisInput != 0)
+                    alignedRotate = Quaternion.LookRotation(playerToMouse) * new Vector3(horizontalAxisInput, 0, verticalAxisInput).normalized;
+                else
+                    alignedRotate = Quaternion.LookRotation(playerToMouse) * Vector3.forward;
+
+                if (alignedRotate != Vector3.zero)
+                    transform.forward = alignedRotate;
+            }
+        }
+        else if (controlScheme == ControlScheme.screenAligned)
+        {
+            var rotate = new Vector3(horizontalAxisInput, 0, verticalAxisInput);
+            var alignedRotate = Quaternion.Euler(0, cameraRotation.y, 0) * rotate;
+            if (alignedRotate != Vector3.zero)
+                transform.forward = alignedRotate;
+        }
+    }
+    #endregion
 }

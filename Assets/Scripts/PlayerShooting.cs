@@ -5,19 +5,34 @@ using UnityEngine;
 
 public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 {
+    #region Public Properties
+    public enum playerState
+    {
+        idle, aiming, reloading
+    }
+    public enum gunState
+    {
+        readyToFire, shooting, reloading
+    }
+    public playerState currentPlayerState = playerState.idle;
+    public gunState currentGunState = gunState.readyToFire;
+
+    public int ActiveWeaponIndex { get => activeWeaponIndex; set => activeWeaponIndex = value; }
+    #endregion
+
     #region Serialized Fields
-    [SerializeField] bool forceAiming;
     [SerializeField] List<GameObject> weaponPrefabs;
     [SerializeField] Transform aimingPlane;
     [SerializeField] Transform aimPosition;
     [SerializeField] Transform backPosition;
     [SerializeField] Transform holdPositionTwohanded;
     [SerializeField] Transform holdPositionOnehanded;
+    [SerializeField] bool forceAiming;
 
-    [SerializeField] bool isIkActive;
     [SerializeField] Transform IkTargetRight;
     [SerializeField] Transform IkTargetLeft;
     [SerializeField] Transform IkTargetHead;
+    [SerializeField] bool isIkActive;
 
     [Tooltip("Defines how fast the movement inaccuracy increases.")]
     [SerializeField] float inaccuracyAcceleration = 2f;
@@ -32,28 +47,24 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     #region Private Fields
     private Animator anim;
     private AudioSource audioSource;
-    private PlayerMovement playerMovement;
     private LineRenderer aimingLine1;
     private LineRenderer aimingLine2;
-    private PersonalWeapon weaponInHands;
     private ParticleSystem muzzleFlashParticles;
-    // RaycastHit variable to store information about what was hit by the aiming ray.
-    private RaycastHit shootableHit;
+    private PersonalWeapon weaponInHands;
+    private PlayerMovement playerMovement;
+    private RaycastHit shootableHit;        // RaycastHit variable to store information about what was hit by the aiming ray.
 
-    private bool isAiming, isReloading, isReadyToFire;
-    private int shootableMask;
-    private int shootableAndFloorMask;
-    private int activeWeaponIndex = 0;
+    private Vector3 aimHoldRotation;
+    private Vector3 aimingPoint = new Vector3();
+    private Vector3 shotPosition;
     private float aimingDistance = 30f;
     private float camRayLength = 100f;
     private float currentInaccuracy;
-    private float timeToReload = 0.7f;        // The time between each shot.
+    private float timeToReload = 0.7f;      // The time between each shot.
     private float reloadCooldownTimer, shotCooldownTimer;
-    private Vector3 shotPosition;
-    private Vector3 aimHoldRotation;
-    private Vector3 aimingPoint = new Vector3();
-
-    public int ActiveWeaponIndex { get => activeWeaponIndex; set => activeWeaponIndex = value; }
+    private int activeWeaponIndex = 0;
+    private int shootableAndFloorMask;
+    private int shootableMask;
     #endregion
 
     #region Photon Callbacks
@@ -61,12 +72,12 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (stream.IsWriting)
         {
-            stream.SendNext(isAiming);
+            stream.SendNext(currentPlayerState == playerState.aiming);
             stream.SendNext(aimHoldRotation);
         }
         else
         {
-            isAiming = (bool)stream.ReceiveNext();
+            var isAiming = (bool)stream.ReceiveNext();
             if (weaponInHands != null)
                 SetIKsToAiming(isAiming);
             aimHoldRotation = (Vector3)stream.ReceiveNext();
@@ -100,61 +111,57 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
     private void Update()
     {
-        if (photonView.IsMine == false && PhotonNetwork.IsConnected == true
-            || weaponInHands == null)
-        {
+        if (photonView.IsMine == false && PhotonNetwork.IsConnected == true)
             return;
-        }
-
-        // Timers
-        if (!isReadyToFire && !isReloading)
-            ShotCooldown();
-        if (isReloading)
-            ReloadCooldown();
-
-        if (Input.GetButtonDown("WeaponSlot1") && weaponPrefabs.Count > 0 && ActiveWeaponIndex != 0)
-        {
-            ChangeWeapon(0);
-            photonView.RPC(nameof(ChangeWeapon), RpcTarget.Others, 0);
-        }
-        if (Input.GetButtonDown("WeaponSlot2") && weaponPrefabs.Count > 1 && ActiveWeaponIndex != 1)
-        {
-            ChangeWeapon(1);
-            photonView.RPC(nameof(ChangeWeapon), RpcTarget.Others, 1);
-        }
 
         // Inaccuracy of shooting
-        HandleInaccuracy();
+        if (weaponInHands != null)
+            HandleInaccuracy();
+        shotPosition = weaponInHands.ShootingPosition.position;
 
-        // Reloading
-        if (weaponInHands.LoadedBullets <= 0 && !isReloading)
-            StartReload();
-
-        // Aiming
-        isAiming = Input.GetButton("Fire2") || forceAiming;
-        aimingLine1.enabled = isAiming && isReadyToFire && !isReloading;
-        aimingLine2.enabled = isAiming && isReadyToFire && !isReloading;
-
-        if (isAiming)
+        switch (currentPlayerState)
         {
-            shotPosition = weaponInHands.ShootingPosition.position;
-            Aim();
-            SetIKsToAiming(true);
+            case playerState.idle:
+                CheckForWeaponChangeInput();
+                if (Input.GetButton("Fire2") || forceAiming)
+                    StartAiming();
+                break;
+            case playerState.aiming:
+                CheckForWeaponChangeInput();
+                Aim();
+                if (weaponInHands.HasAutomaticFire)
+                {
+                    if (Input.GetButton("Fire1") && currentGunState == gunState.readyToFire)
+                        Shoot();
+                }
+                else
+                {
+                    if (Input.GetButtonDown("Fire1") && currentGunState == gunState.readyToFire)
+                        Shoot();
+                }
+                if (!Input.GetButton("Fire2") && !forceAiming)
+                {
+                    EndAiming();
+                    currentPlayerState = playerState.idle;
+                }
+                break;
+            case playerState.reloading:
+                ReloadCooldown();
+                break;
+            default:
+                break;
         }
-        else
-            SetIKsToAiming(false);
-
-
-        // Shooting
-        if (weaponInHands.HasAutomaticFire)
+        switch (currentGunState)
         {
-        if (Input.GetButton("Fire1") && isAiming && isReadyToFire && !isReloading)
-            Shoot();
-        }
-        else
-        {
-        if (Input.GetButtonDown("Fire1") && isAiming && isReadyToFire && !isReloading)
-            Shoot();
+            case gunState.readyToFire:
+                break;
+            case gunState.shooting:
+                ShotCooldown();
+                break;
+            case gunState.reloading:
+                break;
+            default:
+                break;
         }
     }
 
@@ -221,11 +228,12 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (weaponInHands == null)
             return;
-        isReloading = false;
         weaponInHands.LoadedBullets = weaponInHands.BulletChamberSize;
         UpdateHUDAmmoText();
         reloadCooldownTimer = 0;
         shotCooldownTimer = 0;
+        currentGunState = gunState.readyToFire;
+        currentPlayerState = playerState.idle;
     }
     #endregion
 
@@ -254,11 +262,13 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
         if (weaponInHands.WeaponType == PersonalWeaponType.Rifle)
         {
+            weaponObj.transform.SetParent(holdPositionTwohanded, false);
             anim.SetBool("hold" + PersonalWeaponType.Rifle.ToString(), true);
             anim.SetBool("hold" + PersonalWeaponType.Pistol, false);
         }
         else if (weaponInHands.WeaponType == PersonalWeaponType.Pistol)
         {
+            weaponObj.transform.SetParent(holdPositionOnehanded, false);
             anim.SetBool("hold" + PersonalWeaponType.Pistol, true);
             anim.SetBool("hold" + PersonalWeaponType.Rifle.ToString(), false);
         }
@@ -273,9 +283,68 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
     #endregion
 
     #region Private Methods
+    private void Aim()
+    {
+        SetIKsToAiming(true);
+        aimingLine1.SetPosition(0, shotPosition);
+        // Create a ray from the mouse cursor on screen in the direction of the camera.
+        Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Vector3 shotTarget;
+
+        // Perform the raycast and if it hits something on the shootable layer...
+        if (Physics.Raycast(camRay, out shootableHit, camRayLength, shootableMask))
+        {
+            Vector3 aimingVector = shootableHit.point - shotPosition;
+            //Debug.Log("Pos " + playerToMouse);
+            //Debug.Log("ScreenRay " + shootableHit.point);
+            aimingLine2.SetPosition(1, shootableHit.point);
+            shotTarget = shootableHit.point;
+        }
+        else
+        {
+            aimingLine2.SetPosition(1, shotPosition + transform.forward * aimingDistance);
+            shotTarget = shotPosition + transform.forward * aimingDistance;
+        }
+        RaycastHit aimingPos;
+        if (Physics.Raycast(shotPosition, shotTarget - shotPosition, out aimingPos, weaponInHands.Range, shootableAndFloorMask))
+        {
+            aimingPoint = aimingPos.point;
+            aimingLine1.SetPosition(1, aimingPos.point);
+            aimingLine2.SetPosition(0, aimingPos.point);
+        }
+        else
+        {
+            aimingLine1.SetPosition(1, shotTarget);
+            aimingLine2.SetPosition(0, shotTarget);
+        }
+        aimPosition.forward = shotTarget - shotPosition;
+        aimHoldRotation = shotTarget - shotPosition;
+    }
+
+    private void CheckForWeaponChangeInput()
+    {
+        if (Input.GetButtonDown("WeaponSlot1") && weaponPrefabs.Count > 0 && ActiveWeaponIndex != 0)
+        {
+            ChangeWeapon(0);
+            photonView.RPC(nameof(ChangeWeapon), RpcTarget.Others, 0);
+        }
+        if (Input.GetButtonDown("WeaponSlot2") && weaponPrefabs.Count > 1 && ActiveWeaponIndex != 1)
+        {
+            ChangeWeapon(1);
+            photonView.RPC(nameof(ChangeWeapon), RpcTarget.Others, 1);
+        }
+    }
+
+    private void EndAiming()
+    {
+        aimingLine1.enabled = false;
+        aimingLine2.enabled = false;
+        SetIKsToAiming(false);
+    }
+
     private void HandleInaccuracy()
     {
-        var movementInaccuracy = playerMovement.Speed * moveSpeedInaccuracyImpact;
+        var movementInaccuracy = playerMovement.TotalMovementSpeedSquared * moveSpeedInaccuracyImpact;
 
         // Inaccuracy is increasing
         if (movementInaccuracy > currentInaccuracy)
@@ -291,20 +360,22 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         CursorManager.Instance.ResizeCrosshair(currentInaccuracy + weaponInHands.Accuracy);
     }
 
-    private void ShotCooldown()
+    private void ReduceBullets()
     {
-        shotCooldownTimer -= Time.deltaTime;
-        if (shotCooldownTimer < 0)
-        {
-            isReadyToFire = true;
-            shotCooldownTimer = 0;
-        }
+        --weaponInHands.LoadedBullets;
+        UpdateHUDAmmoText();
+    }
+
+    private void ReloadCooldown()
+    {
+        reloadCooldownTimer -= Time.deltaTime;
+        if (reloadCooldownTimer < 0)
+            ReloadWeapon();
     }
 
     private void ResetShotCooldown()
     {
         shotCooldownTimer += weaponInHands.TimeBetweenShots;
-        isReadyToFire = false;
     }
 
     private void SetIKsToAiming(bool shouldSetToAim)
@@ -323,23 +394,17 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
-    private void StartReload()
+    private void SetupIkTargets()
     {
-        reloadCooldownTimer += weaponInHands.ReloadTime;
-        GameManager.Instance.AmmoText.text = "Reload";
-        isReadyToFire = false;
-        isReloading = true;
-    }
-
-    private void ReloadCooldown()
-    {
-        reloadCooldownTimer -= Time.deltaTime;
-        if (reloadCooldownTimer < 0)
-            ReloadWeapon();
+        IkTargetLeft = weaponInHands.RefLeft;
+        IkTargetRight = weaponInHands.RefRight;
+        IkTargetHead = weaponInHands.ShootingPosition;
     }
 
     private void Shoot()
     {
+        aimingLine1.enabled = false;
+        aimingLine2.enabled = false;
         // Inaccuracy
         var combinedInaccuracy = weaponInHands.Accuracy + currentInaccuracy;
         var x = inaccuracyShootImpact *
@@ -384,61 +449,47 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
                     hitBox.Hit(directShotHit.point, Quaternion.FromToRotation(Vector3.forward, shotDirection));
             }
         }
+        if (weaponInHands.LoadedBullets <= 0)
+            StartReload();
+        else
+            currentGunState = gunState.shooting;
     }
 
-    private void Aim()
+    private void ShotCooldown()
     {
-        aimingLine1.SetPosition(0, shotPosition);
-        // Create a ray from the mouse cursor on screen in the direction of the camera.
-        Ray camRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Vector3 shotTarget = new Vector3();
-        
-        // Perform the raycast and if it hits something on the shootable layer...
-        if (Physics.Raycast(camRay, out shootableHit, camRayLength, shootableMask))
+        shotCooldownTimer -= Time.deltaTime;
+        if (shotCooldownTimer < 0)
         {
-            Vector3 aimingVector = shootableHit.point - shotPosition;
-            //Debug.Log("Pos " + playerToMouse);
-            //Debug.Log("ScreenRay " + shootableHit.point);
-            aimingLine2.SetPosition(1, shootableHit.point);
-            shotTarget = shootableHit.point;
+            if (currentPlayerState == playerState.aiming)
+            {
+                aimingLine1.enabled = true;
+                aimingLine2.enabled = true;
+            }
+            currentGunState = gunState.readyToFire;
+            shotCooldownTimer = 0;
         }
-        else
-        {
-            aimingLine2.SetPosition(1, shotPosition + transform.forward * aimingDistance);
-            shotTarget = shotPosition + transform.forward * aimingDistance;
-        }
-        RaycastHit aimingPos;
-        if (Physics.Raycast(shotPosition, shotTarget - shotPosition, out aimingPos, weaponInHands.Range, shootableAndFloorMask))
-        {
-            aimingPoint = aimingPos.point;
-            aimingLine1.SetPosition(1, aimingPos.point);
-            aimingLine2.SetPosition(0, aimingPos.point);
-        }
-        else
-        {
-            aimingLine1.SetPosition(1, shotTarget);
-            aimingLine2.SetPosition(0, shotTarget);
-        }
-        aimPosition.forward = shotTarget - shotPosition;
-        aimHoldRotation = shotTarget - shotPosition;
     }
 
-    private void ReduceBullets()
+    private void StartAiming()
     {
-        --weaponInHands.LoadedBullets;
-        UpdateHUDAmmoText();
+        aimingLine1.enabled = true;
+        aimingLine2.enabled = true;
+        currentPlayerState = playerState.aiming;
+    }
+
+    private void StartReload()
+    {
+        EndAiming();
+        currentPlayerState = playerState.reloading;
+        currentGunState = gunState.reloading;
+
+        reloadCooldownTimer += weaponInHands.ReloadTime;
+        GameManager.Instance.AmmoText.text = "Reload";
     }
 
     private void UpdateHUDAmmoText()
     {
         GameManager.Instance.AmmoText.text = weaponInHands.LoadedBullets + " / " + weaponInHands.BulletChamberSize;
-    }
-
-    private void SetupIkTargets()
-    {
-        IkTargetLeft = weaponInHands.RefLeft;
-        IkTargetRight = weaponInHands.RefRight;
-        IkTargetHead = weaponInHands.ShootingPosition;
     }
     #endregion
 }

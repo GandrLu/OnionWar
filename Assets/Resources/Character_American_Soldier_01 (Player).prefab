@@ -254,13 +254,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 73922c47a22349047b933ce37247b38c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_Speed: 5
+  controlScheme: 0
+  movementSpeed: 5
   aimingSlownessFactor: 0.6
   sprintFactor: 1.3
-  forceAiming: 0
-  aimingAtShootableDirection: {x: 0, y: 0, z: 0}
-  aimingAtShootable: 0
-  controlScheme: 0
 --- !u!114 &345843909383680635
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -273,7 +270,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bbf27183a025a51499b53de77459ba73, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  forceAiming: 0
+  currentPlayerState: 0
+  currentGunState: 0
   weaponPrefabs:
   - {fileID: 5004941494096973913, guid: 3bca997fb84929b4ab9ea09aeba753c9, type: 3}
   - {fileID: 9170804269009093442, guid: 1ed6ed7486442fc43aefe8c7e0cc9c3a, type: 3}
@@ -282,10 +280,11 @@ MonoBehaviour:
   backPosition: {fileID: 1004932712}
   holdPositionTwohanded: {fileID: 4692234984179204123}
   holdPositionOnehanded: {fileID: 422742169550426596}
-  isIkActive: 0
+  forceAiming: 0
   IkTargetRight: {fileID: 0}
   IkTargetLeft: {fileID: 0}
   IkTargetHead: {fileID: 0}
+  isIkActive: 0
   inaccuracyAcceleration: 4
   inaccuracyDeceleration: 1
   moveSpeedInaccuracyImpact: 3
@@ -324,7 +323,6 @@ MonoBehaviour:
   ObservedComponents:
   - {fileID: 6886613070613453669}
   - {fileID: 6072758513696523238}
-  - {fileID: 8668872532701841433}
   - {fileID: 345843909383680635}
   viewIdField: 0
   InstantiationId: 0
