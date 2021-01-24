@@ -60,4 +60,5 @@ Assets/ImportedPackages/
 Assets/ImportedPackages.meta
 Assets/Angoville.jpg*
 Assets/Models/American_soldier_1*
-Assets/Photon/PhotonUnityNetworking/Resources/PhotonServerSettings*
+Assets/Photon/
+Assets/Photon.meta
