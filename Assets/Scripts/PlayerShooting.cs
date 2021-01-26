@@ -407,9 +407,9 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         aimingLine2.enabled = false;
         // Inaccuracy
         var combinedInaccuracy = weaponInHands.Inaccuracy + currentInaccuracy;
-        var x = inaccuracyShootImpact *
+        var xDeviation = inaccuracyShootImpact *
             Random.Range(-combinedInaccuracy, combinedInaccuracy);
-        var y = inaccuracyShootImpact *
+        var yDeviation = inaccuracyShootImpact *
             Random.Range(-combinedInaccuracy, combinedInaccuracy);
 
         ResetShotCooldown();
@@ -419,7 +419,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
         if (shootableHit.collider == null)
         {
-            var shotDirection = transform.forward + new Vector3(x, y, 0);
+            var shotDirection = transform.forward + new Vector3(xDeviation, yDeviation, 0);
             //Debug.DrawRay(shotPosition, shotDirection * 20, Color.blue, 60);
             Ray shotRay = new Ray(shotPosition, shotDirection);
             var dstVec = aimingPoint - shotPosition;
@@ -435,7 +435,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         }
         else
         {
-            var shotDirection = (shootableHit.point - shotPosition).normalized + new Vector3(x, y, 0);
+            var shotDirection = (shootableHit.point - shotPosition).normalized + new Vector3(xDeviation, yDeviation, 0);
             //Debug.DrawRay(shotPosition, shotDirection * 10, Color.cyan, 60);
             Ray shotRay = new Ray(shotPosition, shotDirection);
             var dstVec = aimingPoint - shotPosition;

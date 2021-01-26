@@ -5,7 +5,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks
 {
     #region Serialized Fields
     [SerializeField] ControlScheme controlScheme;           // 0 is move in body direction, 1 is move in screen direction
-    [SerializeField] float movementSpeed = 6f;     // The speed that the player will move at.
+    [SerializeField] float movementSpeed = 6f;              // The speed that the player will move at.
     [SerializeField] float aimingSlownessFactor = 0.6f;
     [SerializeField] float sprintFactor = 1.5f;
     #endregion
@@ -18,16 +18,15 @@ public class PlayerMovement : MonoBehaviourPunCallbacks
     #endregion
 
     #region Private Fields
-    private Animator anim;                      // Reference to the animator component.
+    private Animator anim;
     private Camera mainCamera;
-    private Rigidbody playerRigidbody;          // Reference to the player's rigidbody.
+    private Rigidbody playerRigidbody;
     private PlayerShooting playerShooting;
-    private Vector3 movement;                   // The vector to store the player's movement.
-    private Vector3 cameraRotation;             // The vector to store the cameras rotation
+    private Vector3 cameraRotation;
     private float horizontalAxisInput;
     private float verticalAxisInput;
     private float totalMovementSpeedSquared;
-    private int aimingPlaneMask;                      // A layer mask so that a ray can be cast just at gameobjects on the floor layer.
+    private int aimingPlaneMask;                      // A layer mask for the aiming plane
     private bool isAiming;
     private bool isSprinting;
     private readonly float camRayLength = 100f;          // The length of the ray from the camera into the scene.
@@ -40,7 +39,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks
     #region Unity Callbacks
     void Awake()
     {
-        // Create a layer mask for the floor layer.
+        // Create a layer mask for the aiming plane layer.
         aimingPlaneMask = LayerMask.GetMask("AimingPlane");
 
         // Set up references.
@@ -90,34 +89,34 @@ public class PlayerMovement : MonoBehaviourPunCallbacks
             return;
 
         // Move the player around the scene.
-        Move(horizontalAxisInput, verticalAxisInput, isAiming);
+        Move();
 
         // Turn the player to face the mouse cursor.
-        Turning(isAiming);
+        Turning();
 
         // Animate the player.
-        Animating(horizontalAxisInput, verticalAxisInput, isAiming);
+        Animating();
     }
     #endregion
 
     #region Private Methods
-    private void Animating(float horizontalMove, float verticalMove, bool isAiming)
+    private void Animating()
     {
         // Determine if character moves
-        bool isWalking = IsWalking(horizontalMove, verticalMove);
+        bool isWalking = IsWalking(horizontalAxisInput, verticalAxisInput);
 
         // Tell the animator whether or not the player is walking etc.
         anim.SetBool("IsWalking", isWalking);
         anim.SetBool("IsAiming", isAiming);
-        anim.SetFloat("vertical", verticalMove);
-        anim.SetFloat("horizontal", horizontalMove);
+        anim.SetFloat("vertical", verticalAxisInput);
+        anim.SetFloat("horizontal", horizontalAxisInput);
     }
 
-    private void ApplyAimedMovement(float horizontal, float vertical)
+    private void ApplyAimedMovement()
     {
         if (controlScheme == ControlScheme.bodyDirect)
         {
-            var absoluteMovement = new Vector3(horizontal, 0, vertical).normalized;
+            var absoluteMovement = new Vector3(horizontalAxisInput, 0, verticalAxisInput).normalized;
             absoluteMovement *= Time.fixedDeltaTime * movementSpeed * aimingSlownessFactor;
             TotalMovementSpeedSquared = absoluteMovement.sqrMagnitude;
 
@@ -128,7 +127,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks
         }
         else if (controlScheme == ControlScheme.screenAligned)
         {
-            movement = new Vector3(horizontalAxisInput, 0, verticalAxisInput).normalized;
+            var movement = new Vector3(horizontalAxisInput, 0, verticalAxisInput).normalized;
             movement *= Time.fixedDeltaTime * movementSpeed * aimingSlownessFactor;
             TotalMovementSpeedSquared = movement.sqrMagnitude;
 
@@ -137,11 +136,11 @@ public class PlayerMovement : MonoBehaviourPunCallbacks
         }
     }
 
-    private void ApplyUnaimedMovement(float horizontal, float vertical)
+    private void ApplyUnaimedMovement()
     {
         if (controlScheme == ControlScheme.bodyDirect)
         {
-            movement = transform.forward * Mathf.Abs(vertical) + transform.forward * Mathf.Abs(horizontal);
+            var movement = transform.forward * Mathf.Abs(verticalAxisInput) + transform.forward * Mathf.Abs(horizontalAxisInput);
             movement.Normalize();
             movement *= movementSpeed * Time.fixedDeltaTime;
             if (isSprinting)
@@ -154,7 +153,7 @@ public class PlayerMovement : MonoBehaviourPunCallbacks
         }
         else if (controlScheme == ControlScheme.screenAligned)
         {
-            movement = new Vector3(horizontalAxisInput, 0, verticalAxisInput).normalized;
+            var movement = new Vector3(horizontalAxisInput, 0, verticalAxisInput).normalized;
             movement *= movementSpeed * Time.fixedDeltaTime;
             if (isSprinting)
             {
@@ -172,25 +171,25 @@ public class PlayerMovement : MonoBehaviourPunCallbacks
         return v != 0f || h != 0f;
     }
 
-    private void Move(float h, float v, bool aiming)
+    private void Move()
     {
-        if (aiming)
-            ApplyAimedMovement(h, v);
+        if (isAiming)
+            ApplyAimedMovement();
         else
-            ApplyUnaimedMovement(h, v);
+            ApplyUnaimedMovement();
     }
 
-    private void Turning(bool aiming)
+    private void Turning()
     {
-        if (aiming)
+        if (isAiming)
         {
             // Create a ray from the mouse cursor on screen in the direction of the camera.
             Ray camRay = mainCamera.ScreenPointToRay(Input.mousePosition);
 
-            // Perform the raycast and if it hits something on the floor layer...
+            // Perform the raycast and if it hits something on the aiming plane layer...
             if (Physics.Raycast(camRay, out RaycastHit floorHit, camRayLength, aimingPlaneMask))
             {
-                // Create a vector from the player to the point on the floor the raycast from the mouse hit.
+                // Create a vector from the player to the point on the aiming plane the raycast from the mouse hit.
                 Vector3 playerToMouse = floorHit.point - transform.position;
                 // Ensure the vector is entirely horizontal
                 playerToMouse.y = 0f;
@@ -204,10 +203,10 @@ public class PlayerMovement : MonoBehaviourPunCallbacks
             // Create a ray from the mouse cursor on screen in the direction of the camera.
             Ray camRay = mainCamera.ScreenPointToRay(Input.mousePosition);
 
-            // Perform the raycast and if it hits something on the floor layer...
+            // Perform the raycast and if it hits something on the aiming plane layer...
             if (Physics.Raycast(camRay, out RaycastHit floorHit, camRayLength, aimingPlaneMask))
             {
-                // Create a vector from the player to the point on the floor the raycast from the mouse hit.
+                // Create a vector from the player to the point on the aiming plane the raycast from the mouse hit.
                 Vector3 playerToMouse = floorHit.point - transform.position;
                 // Ensure the vector is entirely horizontal
                 playerToMouse.y = 0f;
