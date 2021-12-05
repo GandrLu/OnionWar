@@ -22,6 +22,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
 
     #region Serialized Fields
     [SerializeField] List<GameObject> weaponPrefabs;
+    [SerializeField] int[] weaponsAmmo;
     [SerializeField] Transform aimingPlane;
     [SerializeField] Transform aimPosition;
     [SerializeField] Transform backPosition;
@@ -95,6 +96,10 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         anim = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
         playerMovement = GetComponent<PlayerMovement>();
+        print("COUNT " + weaponPrefabs.Count);
+        weaponsAmmo = new int[weaponPrefabs.Count];
+        for (int i = 0; i < weaponPrefabs.Count; i++)
+            weaponsAmmo[i] = -1;
     }
 
     private void Start()
@@ -104,9 +109,11 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             return;
         if (weaponInHands == null)
             ChangeWeapon(ActiveWeaponIndex);
+
         // Use in start to ensure weapon is loaded
         if (GameManager.Instance != null)
             UpdateHUDAmmoText();
+
     }
 
     private void Update()
@@ -245,11 +252,14 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             return;
         if (weaponInHands != null)
         {
+            weaponsAmmo[activeWeaponIndex] = weaponInHands.LoadedBullets;
             Destroy(weaponInHands.gameObject, 0.1f);
             weaponInHands.gameObject.SetActive(false);
         }
         GameObject weaponObj = Instantiate(weaponPrefabs[weaponIndex], backPosition);
         weaponInHands = weaponObj.GetComponent<PersonalWeapon>();
+        if(weaponsAmmo[weaponIndex] >= 0)
+            weaponInHands.LoadedBullets = weaponsAmmo[weaponIndex];
         SetupIkTargets();
 
         muzzleFlashParticles = weaponInHands.MuzzleFlash;
