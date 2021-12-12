@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class PlayerDestructable : Destructable
 {
+    [SerializeField] float friendlyHitAmount;
     private Collider[] ragdollColliders = new Collider[0];
     private List<Collider> hitboxColliders = new List<Collider>();
     private Rigidbody[] ragdollRigidbodies = new Rigidbody[0];
@@ -67,6 +68,17 @@ public class PlayerDestructable : Destructable
         {
             Debug.Log("Killed " + PhotonView.Owner.NickName);
             GameManager.Instance.SetPlayerDead();
+        }
+    }
+
+    [PunRPC]
+    public override void InflictDamage(object[] parameters)
+    {
+        if ((int)parameters[1] != GameManager.Instance.TeamID)
+        {
+            object[] parametersWithNewDamage = parameters;
+            parametersWithNewDamage[0] = friendlyHitAmount * (float)parameters[0];
+            base.InflictDamage(parametersWithNewDamage);
         }
     }
 

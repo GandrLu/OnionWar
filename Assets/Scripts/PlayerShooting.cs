@@ -96,7 +96,6 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
         anim = GetComponent<Animator>();
         audioSource = GetComponent<AudioSource>();
         playerMovement = GetComponent<PlayerMovement>();
-        print("COUNT " + weaponPrefabs.Count);
         weaponsAmmo = new int[weaponPrefabs.Count];
         for (int i = 0; i < weaponPrefabs.Count; i++)
             weaponsAmmo[i] = -1;
@@ -440,7 +439,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             {
                 var hitBox = shootableHit.collider.GetComponent<HitBox>();
                 if (hitBox != null)
-                    hitBox.Hit(shootableHit.point, Quaternion.Euler(-shotDirection));
+                    hitBox.Hit(shootableHit.point, Quaternion.Euler(-shotDirection), GameManager.Instance.TeamID);
             }
         }
         else
@@ -456,7 +455,7 @@ public class PlayerShooting : MonoBehaviourPunCallbacks, IPunObservable
             {
                 var hitBox = directShotHit.collider.GetComponent<HitBox>();
                 if (hitBox != null)
-                    hitBox.Hit(directShotHit.point, Quaternion.FromToRotation(Vector3.forward, shotDirection));
+                    hitBox.Hit(directShotHit.point, Quaternion.FromToRotation(Vector3.forward, shotDirection), GameManager.Instance.TeamID);
             }
         }
         if (weaponInHands.LoadedBullets <= 0)

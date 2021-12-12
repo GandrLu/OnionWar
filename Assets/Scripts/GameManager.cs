@@ -9,16 +9,19 @@ using UnityEngine.UI;
 public sealed class GameManager : MonoBehaviourPunCallbacks
 {
     #region Serialized Fields
-    [SerializeField] GameObject playerPrefab;
+    [SerializeField] GameObject[] playerPrefabs;
     [SerializeField] GameObject togglePrefab;
     [SerializeField] GameObject spawnPointRoot;
     [SerializeField] GameObject spawnCanvas;
+    [SerializeField] GameObject spawnScreenPanel;
     [SerializeField] GameObject hudCanvas;
     [SerializeField] GameObject menuCanvas;
     [SerializeField] Camera mapViewCamera;
     [SerializeField] Color hitColor;
     [SerializeField] ToggleGroup spawnToggleGroup;
+    [SerializeField] ToggleGroup teamToggleGroup;
     [SerializeField] Button spawnConfirmButton;
+    [SerializeField] Button teamLoadoutConfirmButton;
     [SerializeField] Button menuResumeButton;
     [SerializeField] Button menuQuitButton;
     [SerializeField] Slider lifepointSlider;
@@ -42,7 +45,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     private float hitFlashSpeed = 1f;
     private float spawnTimer;
     private float spawnTime = 3f;
-    private int cancelKeyHits;
+    private int teamID = 0;
     private bool isSpawnReady;
     private bool isPlayerDead;
     #endregion
@@ -51,6 +54,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     public Text AmmoText { get => ammoText; set => ammoText = value; }
     public static GameManager Instance { get => instance; }
     public Image ItemImage { get => itemImage; set => itemImage = value; }
+    public int TeamID { get => teamID; set => teamID = value; }
     #endregion
 
     #region Unity Callbacks
@@ -74,6 +78,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
             throw new MissingReferenceException();
         if (spawnConfirmButton == null)
             throw new MissingReferenceException();
+        if (teamLoadoutConfirmButton == null)
+            throw new MissingReferenceException();
         if (menuResumeButton == null)
             throw new MissingReferenceException();
         if (menuQuitButton == null)
@@ -89,23 +95,19 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         if (hitImage == null)
             throw new MissingReferenceException();
 
+        if (instance == null)
+        {
+            instance = this;
+        }
         mainCamera = Camera.main;
     }
 
     private void Start()
     {
-        instance = this;
-        if (playerPrefab == null)
-        {
-            Debug.LogError("<Color=Red><a>Missing</a></Color> playerPrefab Reference. Please set it up in GameObject 'Game Manager'", this);
-        }
-        else
-        {
-            InstantiatePlayer();
-        }
-        mainCamera.gameObject.SetActive(false);
-        mapViewCamera.gameObject.SetActive(true);
+        //mainCamera.gameObject.SetActive(false);
+        //mapViewCamera.gameObject.SetActive(true);
         spawnConfirmButton.onClick.AddListener(SetSpawnReady);
+        teamLoadoutConfirmButton.onClick.AddListener(ConfirmTeamAndLoadout);
         menuResumeButton.onClick.AddListener(delegate { menuCanvas.SetActive(false); });
         menuQuitButton.onClick.AddListener(delegate { LeaveRoom(); });
         isPlayerDead = true;
@@ -214,9 +216,9 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     private void InstantiatePlayer()
     {
         Debug.LogFormat("We are Instantiating LocalPlayer from {0}", SceneManager.GetActiveScene().name);
-        //Debug.Log(playerPrefab.name);
+        Debug.Log(playerPrefabs[TeamID].name);
         // we're in a room. spawn a character for the local player. it gets synced by using PhotonNetwork.Instantiate
-        player = PhotonNetwork.Instantiate(playerPrefab.name, Vector3.zero, Quaternion.identity, 0);
+        player = PhotonNetwork.Instantiate(playerPrefabs[TeamID].name, Vector3.zero, Quaternion.identity, 0);
         player.SetActive(false);
         // Set layer of own hitboxes to not shootable to avoid shooting yourself
         foreach (var hitbox in player.GetComponentsInChildren<HitBox>())
@@ -247,12 +249,33 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
             isSpawnReady = true;
     }
 
+    private void ConfirmTeamAndLoadout()
+    {
+        var toggles = teamToggleGroup.GetComponentsInChildren<Toggle>();
+        for (int i = 0; i < toggles.Length; i++)
+        {
+            if (toggles[i].isOn)
+                TeamID = i;
+        }
+        Debug.Log("Team ID " + TeamID);
+        spawnScreenPanel.SetActive(false);
+
+        if (playerPrefabs.Length <= 0)
+        {
+            Debug.LogError("<Color=Red><a>Missing</a></Color> playerPrefab Reference. Please set it up in GameObject 'Game Manager'", this);
+        }
+        else
+        {
+            InstantiatePlayer();
+        }
+    }
+
     private void ShowSpawnScreen()
     {
         spawnCanvas.SetActive(true);
         spawnText.enabled = false;
-        mainCamera.gameObject.SetActive(false);
-        mapViewCamera.gameObject.SetActive(true);
+        //mainCamera.gameObject.SetActive(false);
+        //mapViewCamera.gameObject.SetActive(true);
     }
 
     private void SpawnPlayer()
@@ -267,7 +290,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         isPlayerDead = false;
         spawnTimer = 0f;
         mainCamera.gameObject.SetActive(true);
-        mapViewCamera.gameObject.SetActive(false);
+        //mapViewCamera.gameObject.SetActive(false);
         spawnCanvas.SetActive(false);
         hudCanvas.SetActive(true);
     }

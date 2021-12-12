@@ -34,14 +34,14 @@ public class Destructable : MonoBehaviour
     }
 
     [PunRPC]
-    public void InflictDamage(float damage)
+    public virtual void InflictDamage(object[] parameters)
     {
         if (!PhotonView.IsMine)
             return;
 
-        CurrentLifepoints -= damage;
+        CurrentLifepoints -= (float)parameters[0];
         DamageEvent.Invoke();
-        Debug.Log($"{name} Damage: {damage} Life left: {CurrentLifepoints}");
+        Debug.Log($"{name} Damage: {(float)parameters[0]} Life left: {CurrentLifepoints}");
 
         if (CurrentLifepoints <= 0)
             photonView.RPC("Destruct", RpcTarget.All);
