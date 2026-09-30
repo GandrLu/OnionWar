@@ -17,6 +17,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     [SerializeField] GameObject hudCanvas;
     [SerializeField] GameObject menuCanvas;
     [SerializeField] Camera mapViewCamera;
+    [SerializeField] RawImage spawnMapImage;
     [SerializeField] Color hitColor;
     [SerializeField] ToggleGroup spawnToggleGroup;
     [SerializeField] ToggleGroup teamToggleGroup;
@@ -41,7 +42,6 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     private PlayerMovement playerMovement;
     private PlayerShooting playerShooting;
     private Vector3 spawnPosition;
-    private float mapImageScaleFactor = 5.5f;
     private float hitFlashSpeed = 1f;
     private float spawnTimer;
     private float spawnTime = 3f;
@@ -63,6 +63,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         if (lifepointSlider == null)
             throw new MissingReferenceException();
         if (mapViewCamera == null)
+            throw new MissingReferenceException();
+        if (spawnMapImage == null)
             throw new MissingReferenceException();
         if (togglePrefab == null)
             throw new MissingReferenceException();
@@ -123,10 +125,15 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         
         foreach (var sp in spawnPoints[TeamID])
         {
-            var toggleObj = Instantiate(togglePrefab, spawnToggleGroup.transform);
+            // Parent to the map image and anchor at the normalized map position,
+            // so the toggle follows the image regardless of resolution and aspect ratio
+            var toggleObj = Instantiate(togglePrefab, spawnMapImage.rectTransform);
             var toggle = toggleObj.GetComponent<Toggle>();
-            var screenPos = mapViewCamera.WorldToScreenPoint(sp);
-            toggle.GetComponent<RectTransform>().anchoredPosition = screenPos;
+            var mapPos = WorldToMapImagePoint(sp);
+            var toggleRect = toggle.GetComponent<RectTransform>();
+            toggleRect.anchorMin = mapPos;
+            toggleRect.anchorMax = mapPos;
+            toggleRect.anchoredPosition = Vector2.zero;
             toggle.group = spawnToggleGroup;
             spawnToggleGroup.RegisterToggle(toggle);
             spawnTogglePositionPairs.Add(toggle, sp);
@@ -298,6 +305,19 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         //mapViewCamera.gameObject.SetActive(false);
         spawnCanvas.SetActive(false);
         hudCanvas.SetActive(true);
+    }
+
+    /// <summary>
+    /// Converts a world position into normalized (0-1) coordinates on the spawn map image,
+    /// taking the image's uvRect into account in case only a part of the map texture is shown.
+    /// </summary>
+    private Vector2 WorldToMapImagePoint(Vector3 worldPosition)
+    {
+        Vector2 viewportPos = mapViewCamera.WorldToViewportPoint(worldPosition);
+        var uvRect = spawnMapImage.uvRect;
+        return new Vector2(
+            (viewportPos.x - uvRect.x) / uvRect.width,
+            (viewportPos.y - uvRect.y) / uvRect.height);
     }
 
     private void UpdateHudLifepoints()
