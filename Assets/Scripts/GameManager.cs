@@ -112,11 +112,16 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         menuQuitButton.onClick.AddListener(delegate { LeaveRoom(); });
         isPlayerDead = true;
 
-        var spawnPoints = new List<Vector3>();
-        foreach (Transform child in spawnPointRoot.transform)
-            spawnPoints.Add(child.position);
-
-        foreach (var sp in spawnPoints)
+        var spawnPointsTeam1 = new List<Vector3>();
+        var spawnPointsTeam2 = new List<Vector3>();
+        List<Vector3>[] spawnPoints = { spawnPointsTeam1, spawnPointsTeam2 };
+        for (int i = 0; i < spawnPointRoot.transform.childCount; i++)
+        {
+            foreach (Transform sPoint in spawnPointRoot.transform.GetChild(i))
+                spawnPoints[i].Add(sPoint.position);
+        }
+        
+        foreach (var sp in spawnPoints[TeamID])
         {
             var toggleObj = Instantiate(togglePrefab, spawnToggleGroup.transform);
             var toggle = toggleObj.GetComponent<Toggle>();
