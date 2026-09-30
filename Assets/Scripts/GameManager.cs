@@ -18,6 +18,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     [SerializeField] GameObject menuCanvas;
     [SerializeField] Camera mapViewCamera;
     [SerializeField] RawImage spawnMapImage;
+    [SerializeField] RawImage miniMapImage;
+    [SerializeField] RectTransform playerMapMarker;
     [SerializeField] Color hitColor;
     [SerializeField] ToggleGroup spawnToggleGroup;
     [SerializeField] ToggleGroup teamToggleGroup;
@@ -65,6 +67,10 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         if (mapViewCamera == null)
             throw new MissingReferenceException();
         if (spawnMapImage == null)
+            throw new MissingReferenceException();
+        if (miniMapImage == null)
+            throw new MissingReferenceException();
+        if (playerMapMarker == null)
             throw new MissingReferenceException();
         if (togglePrefab == null)
             throw new MissingReferenceException();
@@ -114,6 +120,11 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         menuQuitButton.onClick.AddListener(delegate { LeaveRoom(); });
         isPlayerDead = true;
 
+        // Marker is anchored on the minimap the same way as the spawn toggles on the spawn map
+        playerMapMarker.SetParent(miniMapImage.rectTransform, false);
+        playerMapMarker.anchoredPosition = Vector2.zero;
+        playerMapMarker.gameObject.SetActive(false);
+
         var spawnPointsTeam1 = new List<Vector3>();
         var spawnPointsTeam2 = new List<Vector3>();
         List<Vector3>[] spawnPoints = { spawnPointsTeam1, spawnPointsTeam2 };
@@ -129,7 +140,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
             // so the toggle follows the image regardless of resolution and aspect ratio
             var toggleObj = Instantiate(togglePrefab, spawnMapImage.rectTransform);
             var toggle = toggleObj.GetComponent<Toggle>();
-            var mapPos = WorldToMapImagePoint(sp);
+            var mapPos = WorldToMapImagePoint(spawnMapImage, sp);
             var toggleRect = toggle.GetComponent<RectTransform>();
             toggleRect.anchorMin = mapPos;
             toggleRect.anchorMax = mapPos;
@@ -170,6 +181,11 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         if (isPlayerDead && isSpawnReady && spawnTimer <= 0f)
         {
             SpawnPlayer();
+        }
+
+        if (!isPlayerDead)
+        {
+            UpdatePlayerMapMarker();
         }
 
         if (Input.GetButtonDown("Cancel"))
@@ -216,6 +232,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         spawnTimer += spawnTime;
         spawnText.enabled = true;
         hudCanvas.SetActive(false);
+        playerMapMarker.gameObject.SetActive(false);
     }
 
     public void TakeHit()
@@ -305,19 +322,36 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         //mapViewCamera.gameObject.SetActive(false);
         spawnCanvas.SetActive(false);
         hudCanvas.SetActive(true);
+        playerMapMarker.gameObject.SetActive(true);
     }
 
     /// <summary>
-    /// Converts a world position into normalized (0-1) coordinates on the spawn map image,
+    /// Converts a world position into normalized (0-1) coordinates on a map image showing the map view texture,
     /// taking the image's uvRect into account in case only a part of the map texture is shown.
     /// </summary>
-    private Vector2 WorldToMapImagePoint(Vector3 worldPosition)
+    private Vector2 WorldToMapImagePoint(RawImage mapImage, Vector3 worldPosition)
     {
         Vector2 viewportPos = mapViewCamera.WorldToViewportPoint(worldPosition);
-        var uvRect = spawnMapImage.uvRect;
+        var uvRect = mapImage.uvRect;
         return new Vector2(
             (viewportPos.x - uvRect.x) / uvRect.width,
             (viewportPos.y - uvRect.y) / uvRect.height);
+    }
+
+    private void UpdatePlayerMapMarker()
+    {
+        var playerTransform = player.transform;
+        // Clamp so the marker sticks to the minimap border when the player is outside the shown area
+        var mapPos = WorldToMapImagePoint(miniMapImage, playerTransform.position);
+        mapPos.x = Mathf.Clamp01(mapPos.x);
+        mapPos.y = Mathf.Clamp01(mapPos.y);
+        playerMapMarker.anchorMin = mapPos;
+        playerMapMarker.anchorMax = mapPos;
+
+        // Project the facing direction through the map camera, so rotation matches the map regardless of camera orientation
+        var facingOnMap = WorldToMapImagePoint(miniMapImage, playerTransform.position + playerTransform.forward) - WorldToMapImagePoint(miniMapImage, playerTransform.position);
+        var angle = Mathf.Atan2(facingOnMap.y, facingOnMap.x) * Mathf.Rad2Deg - 90f;
+        playerMapMarker.localRotation = Quaternion.Euler(0f, 0f, angle);
     }
 
     private void UpdateHudLifepoints()
