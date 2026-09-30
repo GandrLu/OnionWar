@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: MyBush1billboard
-  m_Shader: {fileID: 4800000, guid: 7fa91deb5f453314ebd6133ef8f37b92, type: 3}
+  m_Shader: {fileID: 4800000, guid: 1793b651ef9b0bb41b97e31ae459e796, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
