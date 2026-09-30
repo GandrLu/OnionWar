@@ -2501,6 +2501,9 @@ MonoBehaviour:
   hudCanvas: {fileID: 1744328308}
   menuCanvas: {fileID: 434718481}
   mapViewCamera: {fileID: 0}
+  spawnMapImage: {fileID: 0}
+  miniMapImage: {fileID: 0}
+  playerMapMarker: {fileID: 0}
   hitColor: {r: 1, g: 0, b: 0, a: 0.83137256}
   spawnToggleGroup: {fileID: 710016347}
   teamToggleGroup: {fileID: 3887523751293443421}
@@ -2528,6 +2531,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timerText: {fileID: 680788431}
   roundTime: 600
+  gameMode: {fileID: 0}
+  roundEndPanel: {fileID: 0}
+  roundEndText: {fileID: 0}
+  teamNames:
+  - Team A
+  - Team B
+  leaveRoomDelay: 10
 --- !u!1 &4032886494886526058
 GameObject:
   m_ObjectHideFlags: 0

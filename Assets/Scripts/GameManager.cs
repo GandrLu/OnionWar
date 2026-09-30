@@ -50,6 +50,7 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     private int teamID = 0;
     private bool isSpawnReady;
     private bool isPlayerDead;
+    private bool isRoundEnded;
     #endregion
 
     #region Properties
@@ -154,6 +155,9 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
 
     private void Update()
     {
+        if (isRoundEnded)
+            return;
+
         if (isPlayerDead)
         {
             if (spawnToggleGroup.AnyTogglesOn())
@@ -207,6 +211,9 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player other)
     {
         Debug.LogFormat("OnPlayerEnteredRoom() {0}", other.NickName);
+        // Local player isn't instantiated yet while still in team selection, nothing to sync then
+        if (playerShooting == null)
+            return;
         // Equip correct weapon at joined players instance of this player
         playerShooting.photonView.RPC(nameof(playerShooting.ChangeWeapon), other, playerShooting.ActiveWeaponIndex);
     }
@@ -233,6 +240,21 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         spawnText.enabled = true;
         hudCanvas.SetActive(false);
         playerMapMarker.gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// Stops spawning and disables the local player's controls while the round result is shown.
+    /// </summary>
+    public void EndRound()
+    {
+        isRoundEnded = true;
+        if (playerMovement != null)
+            playerMovement.enabled = false;
+        if (playerShooting != null)
+            playerShooting.enabled = false;
+        spawnCanvas.SetActive(false);
+        spawnText.enabled = false;
+        menuCanvas.SetActive(false);
     }
 
     public void TakeHit()
