@@ -15,9 +15,13 @@
 
 # TextMesh Pro files
 [Aa]ssets/TextMesh*Pro/
+[Aa]ssets/TextMesh*Pro.meta
 
 # Visual Studio cache directory
 .vs/
+
+.vscode/
+.vsconfig
 
 # Gradle cache directory
 .gradle/
@@ -60,4 +64,6 @@ Assets/ImportedPackages/
 Assets/ImportedPackages.meta
 Assets/Angoville.jpg*
 Assets/Models/American_soldier_1*
-Assets/Photon/PhotonUnityNetworking/Resources/PhotonServerSettings*
+Assets/Photon/
+Assets/Photon.meta
+CLAUDE.md

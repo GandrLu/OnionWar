@@ -19,7 +19,7 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     #region Private Fields
     // This clients game version number
-    private string gameVersion = "02.2021_01";
+    private string gameVersion = "07.2023_01";
     
     /// <summary>
     /// Keep track of the current process. Since connection is asynchronous and is based on several callbacks from Photon,

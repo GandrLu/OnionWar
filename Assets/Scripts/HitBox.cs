@@ -19,9 +19,9 @@ public class HitBox : MonoBehaviour
             throw new MissingReferenceException();
     }
 
-    public void Hit(Vector3 position, Quaternion rotation)
+    public void Hit(Vector3 position, Quaternion rotation, int teamID)
     {
-        associatedDestructable.PhotonView.RPC(nameof(associatedDestructable.InflictDamage), RpcTarget.All, defaultDamage);
+        associatedDestructable.PhotonView.RPC(nameof(associatedDestructable.InflictDamage), RpcTarget.All, new object[2] { defaultDamage, teamID});
         if (associatedDestructable.HitEffect != null)
             associatedDestructable.PhotonView.RPC("PlayHitEffect", RpcTarget.All, new object[2] { position, rotation });
     }

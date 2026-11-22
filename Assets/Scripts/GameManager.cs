@@ -9,16 +9,22 @@ using UnityEngine.UI;
 public sealed class GameManager : MonoBehaviourPunCallbacks
 {
     #region Serialized Fields
-    [SerializeField] GameObject playerPrefab;
+    [SerializeField] GameObject[] playerPrefabs;
     [SerializeField] GameObject togglePrefab;
     [SerializeField] GameObject spawnPointRoot;
     [SerializeField] GameObject spawnCanvas;
+    [SerializeField] GameObject spawnScreenPanel;
     [SerializeField] GameObject hudCanvas;
     [SerializeField] GameObject menuCanvas;
     [SerializeField] Camera mapViewCamera;
+    [SerializeField] RawImage spawnMapImage;
+    [SerializeField] RawImage miniMapImage;
+    [SerializeField] RectTransform playerMapMarker;
     [SerializeField] Color hitColor;
     [SerializeField] ToggleGroup spawnToggleGroup;
+    [SerializeField] ToggleGroup teamToggleGroup;
     [SerializeField] Button spawnConfirmButton;
+    [SerializeField] Button teamLoadoutConfirmButton;
     [SerializeField] Button menuResumeButton;
     [SerializeField] Button menuQuitButton;
     [SerializeField] Slider lifepointSlider;
@@ -38,19 +44,20 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     private PlayerMovement playerMovement;
     private PlayerShooting playerShooting;
     private Vector3 spawnPosition;
-    private float mapImageScaleFactor = 5.5f;
     private float hitFlashSpeed = 1f;
     private float spawnTimer;
-    private float spawnTime = 5f;
-    private int cancelKeyHits;
+    private float spawnTime = 3f;
+    private int teamID = 0;
     private bool isSpawnReady;
     private bool isPlayerDead;
+    private bool isRoundEnded;
     #endregion
 
     #region Properties
     public Text AmmoText { get => ammoText; set => ammoText = value; }
     public static GameManager Instance { get => instance; }
     public Image ItemImage { get => itemImage; set => itemImage = value; }
+    public int TeamID { get => teamID; set => teamID = value; }
     #endregion
 
     #region Unity Callbacks
@@ -59,6 +66,12 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         if (lifepointSlider == null)
             throw new MissingReferenceException();
         if (mapViewCamera == null)
+            throw new MissingReferenceException();
+        if (spawnMapImage == null)
+            throw new MissingReferenceException();
+        if (miniMapImage == null)
+            throw new MissingReferenceException();
+        if (playerMapMarker == null)
             throw new MissingReferenceException();
         if (togglePrefab == null)
             throw new MissingReferenceException();
@@ -73,6 +86,8 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         if (spawnToggleGroup == null)
             throw new MissingReferenceException();
         if (spawnConfirmButton == null)
+            throw new MissingReferenceException();
+        if (teamLoadoutConfirmButton == null)
             throw new MissingReferenceException();
         if (menuResumeButton == null)
             throw new MissingReferenceException();
@@ -89,37 +104,48 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         if (hitImage == null)
             throw new MissingReferenceException();
 
+        if (instance == null)
+        {
+            instance = this;
+        }
         mainCamera = Camera.main;
     }
 
     private void Start()
     {
-        instance = this;
-        if (playerPrefab == null)
-        {
-            Debug.LogError("<Color=Red><a>Missing</a></Color> playerPrefab Reference. Please set it up in GameObject 'Game Manager'", this);
-        }
-        else
-        {
-            InstantiatePlayer();
-        }
-        mainCamera.gameObject.SetActive(false);
-        mapViewCamera.gameObject.SetActive(true);
+        //mainCamera.gameObject.SetActive(false);
+        //mapViewCamera.gameObject.SetActive(true);
         spawnConfirmButton.onClick.AddListener(SetSpawnReady);
+        teamLoadoutConfirmButton.onClick.AddListener(ConfirmTeamAndLoadout);
         menuResumeButton.onClick.AddListener(delegate { menuCanvas.SetActive(false); });
         menuQuitButton.onClick.AddListener(delegate { LeaveRoom(); });
         isPlayerDead = true;
 
-        var spawnPoints = new List<Vector3>();
-        foreach (Transform child in spawnPointRoot.transform)
-            spawnPoints.Add(child.position);
+        // Marker is anchored on the minimap the same way as the spawn toggles on the spawn map
+        playerMapMarker.SetParent(miniMapImage.rectTransform, false);
+        playerMapMarker.anchoredPosition = Vector2.zero;
+        playerMapMarker.gameObject.SetActive(false);
 
-        foreach (var sp in spawnPoints)
+        var spawnPointsTeam1 = new List<Vector3>();
+        var spawnPointsTeam2 = new List<Vector3>();
+        List<Vector3>[] spawnPoints = { spawnPointsTeam1, spawnPointsTeam2 };
+        for (int i = 0; i < spawnPointRoot.transform.childCount; i++)
         {
-            var toggleObj = Instantiate(togglePrefab, spawnToggleGroup.transform);
+            foreach (Transform sPoint in spawnPointRoot.transform.GetChild(i))
+                spawnPoints[i].Add(sPoint.position);
+        }
+        
+        foreach (var sp in spawnPoints[TeamID])
+        {
+            // Parent to the map image and anchor at the normalized map position,
+            // so the toggle follows the image regardless of resolution and aspect ratio
+            var toggleObj = Instantiate(togglePrefab, spawnMapImage.rectTransform);
             var toggle = toggleObj.GetComponent<Toggle>();
-            var screenPos = mapViewCamera.WorldToScreenPoint(sp);
-            toggle.GetComponent<RectTransform>().anchoredPosition = screenPos;
+            var mapPos = WorldToMapImagePoint(spawnMapImage, sp);
+            var toggleRect = toggle.GetComponent<RectTransform>();
+            toggleRect.anchorMin = mapPos;
+            toggleRect.anchorMax = mapPos;
+            toggleRect.anchoredPosition = Vector2.zero;
             toggle.group = spawnToggleGroup;
             spawnToggleGroup.RegisterToggle(toggle);
             spawnTogglePositionPairs.Add(toggle, sp);
@@ -129,6 +155,9 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
 
     private void Update()
     {
+        if (isRoundEnded)
+            return;
+
         if (isPlayerDead)
         {
             if (spawnToggleGroup.AnyTogglesOn())
@@ -158,6 +187,11 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
             SpawnPlayer();
         }
 
+        if (!isPlayerDead)
+        {
+            UpdatePlayerMapMarker();
+        }
+
         if (Input.GetButtonDown("Cancel"))
         {
             menuCanvas.SetActive(!menuCanvas.activeSelf);
@@ -177,6 +211,9 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     public override void OnPlayerEnteredRoom(Player other)
     {
         Debug.LogFormat("OnPlayerEnteredRoom() {0}", other.NickName);
+        // Local player isn't instantiated yet while still in team selection, nothing to sync then
+        if (playerShooting == null)
+            return;
         // Equip correct weapon at joined players instance of this player
         playerShooting.photonView.RPC(nameof(playerShooting.ChangeWeapon), other, playerShooting.ActiveWeaponIndex);
     }
@@ -202,6 +239,22 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         spawnTimer += spawnTime;
         spawnText.enabled = true;
         hudCanvas.SetActive(false);
+        playerMapMarker.gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// Stops spawning and disables the local player's controls while the round result is shown.
+    /// </summary>
+    public void EndRound()
+    {
+        isRoundEnded = true;
+        if (playerMovement != null)
+            playerMovement.enabled = false;
+        if (playerShooting != null)
+            playerShooting.enabled = false;
+        spawnCanvas.SetActive(false);
+        spawnText.enabled = false;
+        menuCanvas.SetActive(false);
     }
 
     public void TakeHit()
@@ -213,25 +266,19 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
     #region Private Methods
     private void InstantiatePlayer()
     {
-        if (PlayerPhotonManager.LocalPlayerInstance == null)
-        {
-            Debug.LogFormat("We are Instantiating LocalPlayer from {0}", SceneManager.GetActiveScene().name);
-            // we're in a room. spawn a character for the local player. it gets synced by using PhotonNetwork.Instantiate
-            player = PhotonNetwork.Instantiate(playerPrefab.name, Vector3.zero, Quaternion.identity, 0);
-            player.SetActive(false);
-            // Set layer of own hitboxes to not shootable to avoid shooting yourself
-            foreach (var hitbox in player.GetComponentsInChildren<HitBox>())
-                hitbox.gameObject.layer = notShootableLayer;
-            playerDestructable = player.GetComponent<PlayerDestructable>();
-            playerDestructable.DamageEvent.AddListener(UpdateHudLifepoints);
-            playerDestructable.DamageEvent.AddListener(TakeHit);
-            playerMovement = player.GetComponent<PlayerMovement>();
-            playerShooting = player.GetComponent<PlayerShooting>();
-        }
-        else
-        {
-            Debug.LogFormat("Ignoring scene load for {0}", SceneManagerHelper.ActiveSceneName);
-        }
+        Debug.LogFormat("We are Instantiating LocalPlayer from {0}", SceneManager.GetActiveScene().name);
+        Debug.Log(playerPrefabs[TeamID].name);
+        // we're in a room. spawn a character for the local player. it gets synced by using PhotonNetwork.Instantiate
+        player = PhotonNetwork.Instantiate(playerPrefabs[TeamID].name, Vector3.zero, Quaternion.identity, 0);
+        player.SetActive(false);
+        // Set layer of own hitboxes to not shootable to avoid shooting yourself
+        foreach (var hitbox in player.GetComponentsInChildren<HitBox>())
+            hitbox.gameObject.layer = notShootableLayer;
+        playerDestructable = player.GetComponent<PlayerDestructable>();
+        playerDestructable.DamageEvent.AddListener(UpdateHudLifepoints);
+        playerDestructable.DamageEvent.AddListener(TakeHit);
+        playerMovement = player.GetComponent<PlayerMovement>();
+        playerShooting = player.GetComponent<PlayerShooting>();
     }
 
     private IEnumerator LerpHitColor()
@@ -253,12 +300,33 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
             isSpawnReady = true;
     }
 
+    private void ConfirmTeamAndLoadout()
+    {
+        var toggles = teamToggleGroup.GetComponentsInChildren<Toggle>();
+        for (int i = 0; i < toggles.Length; i++)
+        {
+            if (toggles[i].isOn)
+                TeamID = i;
+        }
+        Debug.Log("Team ID " + TeamID);
+        spawnScreenPanel.SetActive(false);
+
+        if (playerPrefabs.Length <= 0)
+        {
+            Debug.LogError("<Color=Red><a>Missing</a></Color> playerPrefab Reference. Please set it up in GameObject 'Game Manager'", this);
+        }
+        else
+        {
+            InstantiatePlayer();
+        }
+    }
+
     private void ShowSpawnScreen()
     {
         spawnCanvas.SetActive(true);
         spawnText.enabled = false;
-        mainCamera.gameObject.SetActive(false);
-        mapViewCamera.gameObject.SetActive(true);
+        //mainCamera.gameObject.SetActive(false);
+        //mapViewCamera.gameObject.SetActive(true);
     }
 
     private void SpawnPlayer()
@@ -273,9 +341,39 @@ public sealed class GameManager : MonoBehaviourPunCallbacks
         isPlayerDead = false;
         spawnTimer = 0f;
         mainCamera.gameObject.SetActive(true);
-        mapViewCamera.gameObject.SetActive(false);
+        //mapViewCamera.gameObject.SetActive(false);
         spawnCanvas.SetActive(false);
         hudCanvas.SetActive(true);
+        playerMapMarker.gameObject.SetActive(true);
+    }
+
+    /// <summary>
+    /// Converts a world position into normalized (0-1) coordinates on a map image showing the map view texture,
+    /// taking the image's uvRect into account in case only a part of the map texture is shown.
+    /// </summary>
+    private Vector2 WorldToMapImagePoint(RawImage mapImage, Vector3 worldPosition)
+    {
+        Vector2 viewportPos = mapViewCamera.WorldToViewportPoint(worldPosition);
+        var uvRect = mapImage.uvRect;
+        return new Vector2(
+            (viewportPos.x - uvRect.x) / uvRect.width,
+            (viewportPos.y - uvRect.y) / uvRect.height);
+    }
+
+    private void UpdatePlayerMapMarker()
+    {
+        var playerTransform = player.transform;
+        // Clamp so the marker sticks to the minimap border when the player is outside the shown area
+        var mapPos = WorldToMapImagePoint(miniMapImage, playerTransform.position);
+        mapPos.x = Mathf.Clamp01(mapPos.x);
+        mapPos.y = Mathf.Clamp01(mapPos.y);
+        playerMapMarker.anchorMin = mapPos;
+        playerMapMarker.anchorMax = mapPos;
+
+        // Project the facing direction through the map camera, so rotation matches the map regardless of camera orientation
+        var facingOnMap = WorldToMapImagePoint(miniMapImage, playerTransform.position + playerTransform.forward) - WorldToMapImagePoint(miniMapImage, playerTransform.position);
+        var angle = Mathf.Atan2(facingOnMap.y, facingOnMap.x) * Mathf.Rad2Deg - 90f;
+        playerMapMarker.localRotation = Quaternion.Euler(0f, 0f, angle);
     }
 
     private void UpdateHudLifepoints()

@@ -6,10 +6,12 @@ using UnityEngine;
 
 public class PlayerDestructable : Destructable
 {
+    [SerializeField] float friendlyHitAmount;
     private Collider[] ragdollColliders = new Collider[0];
     private List<Collider> hitboxColliders = new List<Collider>();
     private Rigidbody[] ragdollRigidbodies = new Rigidbody[0];
     private Rigidbody mainRigidbody;
+    private int lastHitByTeamID = GameMode.NoWinner;
 
     protected new void Start()
     {
@@ -66,7 +68,21 @@ public class PlayerDestructable : Destructable
         if (PhotonView.IsMine)
         {
             Debug.Log("Killed " + PhotonView.Owner.NickName);
+            RoundManager.ReportPlayerKilled(GameManager.Instance.TeamID, lastHitByTeamID);
             GameManager.Instance.SetPlayerDead();
+        }
+    }
+
+    [PunRPC]
+    public override void InflictDamage(object[] parameters)
+    {
+        if ((int)parameters[1] != GameManager.Instance.TeamID)
+        {
+            // Remembered before applying damage, as a lethal hit triggers Destruct immediately on the owner
+            lastHitByTeamID = (int)parameters[1];
+            object[] parametersWithNewDamage = parameters;
+            parametersWithNewDamage[0] = friendlyHitAmount * (float)parameters[0];
+            base.InflictDamage(parametersWithNewDamage);
         }
     }
 
